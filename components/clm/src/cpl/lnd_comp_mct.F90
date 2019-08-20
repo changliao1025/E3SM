@@ -43,6 +43,8 @@ contains
     use clm_time_manager , only : get_nstep, get_step_size, set_timemgr_init, set_nextsw_cday
     use clm_initializeMod, only : initialize1, initialize2, initialize3
     use clm_instMod      , only : lnd2atm_vars, lnd2glc_vars
+    !h2sc
+    use clm_instMod      , only :  atm2lnd_vars, glc2lnd_vars, rof2lnd_vars 
     use clm_varctl       , only : finidat,single_column, clm_varctl_set, iulog, noland
     use clm_varctl       , only : inst_index, inst_suffix, inst_name
     use clm_varorb       , only : eccen, obliqr, lambm0, mvelpp
@@ -67,6 +69,7 @@ contains
     use perf_mod         , only : t_startf, t_stopf
     use mct_mod
     use ESMF
+    use h2sc_drainage, only : elm_Init_h2sc
     !
     ! !ARGUMENTS:
     type(ESMF_Clock),           intent(inout) :: EClock           ! Input synchronization clock
@@ -115,6 +118,9 @@ contains
     type(bounds_type) :: bounds                      ! bounds
     character(len=32), parameter :: sub = 'lnd_init_mct'
     character(len=*),  parameter :: format = "('("//trim(sub)//") :',A)"
+    !h2sc
+    logical,save :: first_time = .true.
+    logical,save :: first_time_h2sc = .true.
     !-----------------------------------------------------------------------
 
     ! Set cdata data
@@ -334,6 +340,9 @@ contains
     endif
 #endif
 
+ !initialize h2sc
+call elm_Init_h2sc(bounds)
+
   end subroutine lnd_init_mct
 
   !====================================================================================
@@ -346,6 +355,8 @@ contains
     ! !USES:
     use shr_kind_mod    ,  only : r8 => shr_kind_r8
     use clm_instMod     , only : lnd2atm_vars, atm2lnd_vars, lnd2glc_vars, glc2lnd_vars
+       !h2sc
+    use clm_instMod     , only :  rof2lnd_vars
     use clm_driver      ,  only : clm_drv
     use clm_time_manager,  only : get_curr_date, get_nstep, get_curr_calday, get_step_size
     use clm_time_manager,  only : advance_timestep, set_nextsw_cday,update_rad_dtime
@@ -455,7 +466,16 @@ contains
     ! Map to clm (only when state and/or fluxes need to be updated)
 
     call t_startf ('lc_lnd_import')
-    call lnd_import( bounds, x2l_l%rattr, atm2lnd_vars, glc2lnd_vars)
+   
+     !50==================================================
+    ! Author: Chang Liao( changliao at pnnl.gov )
+    ! Module: H2SC (hillslope based soil column drainage function)
+    ! rof->lnd exchange
+    ! First edit: 20180625
+    ! Details: Replace the original import to the new import
+    !50==================================================
+    !call lnd_import2( bounds, x2l_l%rattr, atm2lnd_vars, glc2lnd_vars, rof2lnd_vars)
+    call lnd_import( bounds, x2l_l%rattr, atm2lnd_vars, glc2lnd_vars, rof2lnd_vars)
     call t_stopf ('lc_lnd_import')
 
     ! Use infodata to set orbital values if updated mid-run

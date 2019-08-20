@@ -1654,6 +1654,17 @@ If TRUE (which is the default), check consistency between pct_pft on the finidat
 and pct_pft read from the surface dataset. This check is only done for a NON-transient run.
 </entry>
 
+<!-- ========================================================================================  -->         <!-- Namelist options related to H2SC model  -->     
+<!-- ========================================================================================  -->                           
+<entry id="use_h2sc" type="logical" category="default_settings"   
+        group="clm_inparm" valid_values="">     
+Runtime flag to turn on/off h2sc.           
+</entry>
+<entry id="hydraulic_anisotropy" type="real" category="default_settings"
+        group="clm_inparm" valid_values="">
+Soil hydraulic anisotropy parameter.
+</entry>
+
 <!-- ========================================================================================  -->
 <!-- Namelist options related to dynpft consistency checks                                     -->
 <!-- ========================================================================================  -->

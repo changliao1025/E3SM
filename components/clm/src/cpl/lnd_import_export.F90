@@ -9,6 +9,8 @@ module lnd_import_export
   use glc2lndMod   , only: glc2lnd_type
   use GridcellType , only: grc_pp          ! for access to gridcell topology
   use TopounitDataType , only: top_as, top_af  ! atmospheric state and flux variables  
+
+  use rof2lndType  , only: rof2lnd_type !h2sc
   use clm_cpl_indices
   use mct_mod
   !
@@ -18,7 +20,14 @@ module lnd_import_export
 contains
 
   !===============================================================================
-  subroutine lnd_import( bounds, x2l, atm2lnd_vars, glc2lnd_vars)
+!50==================================================
+  ! Author: Chang Liao( changliao at pnnl.gov )
+  ! Module: H2SC (hillslope based soil column drainage function)
+  ! rof->lnd exchange
+  ! First edit: 20180530
+  !changes: added the rof2lnd_vars as argument
+  !50==================================================
+  subroutine lnd_import( bounds, x2l, atm2lnd_vars, glc2lnd_vars, rof2lnd_vars)
 
     !---------------------------------------------------------------------------
     ! !DESCRIPTION:
@@ -37,12 +46,14 @@ contains
     use spmdmod          , only: masterproc, mpicom, MPI_REAL8
     use clm_nlUtilsMod   , only : find_nlgroup_name
     use netcdf
+    use h2sc_drainage    , only : cHillslope  !h2sc
     !
     ! !ARGUMENTS:
     type(bounds_type)  , intent(in)    :: bounds   ! bounds
     real(r8)           , intent(in)    :: x2l(:,:) ! driver import state to land model
     type(atm2lnd_type) , intent(inout) :: atm2lnd_vars      ! clm internal input data type
     type(glc2lnd_type) , intent(inout) :: glc2lnd_vars      ! clm internal input data type
+    type(rof2lnd_type) , intent(inout) :: rof2lnd_vars  
     !
     ! !LOCAL VARIABLES:
     integer  :: g,topo,i,m,thism,nstep,ier  ! indices, number of steps, and error code
@@ -105,6 +116,13 @@ contains
     character(len=CL)  :: stream_fldFileName_popdens ! poplulation density stream filename
     character(len=CL)  :: stream_fldFileName_ndep    ! nitrogen deposition stream filename
     logical :: use_sitedata, has_zonefile, use_daymet, use_livneh
+
+    !h2sc
+    logical,save :: first_time = .false.
+    logical,save :: first_time_h2sc = .true.
+    real(r8) :: dArea, dResolution_grid
+    real(r8) :: dDummy
+
     data caldaym / 1, 32, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 /	
 
     ! Constants to compute vapor pressure
@@ -1153,6 +1171,97 @@ contains
        end if
 
     end do
+
+     !h2sc
+    do g = bounds%begg,bounds%endg
+      i = 1 + (g - bounds%begg)
+      !50==================================================
+      ! Author: Chang Liao( changliao at pnnl.gov )
+      ! Module: H2SC (hillslope based soil column drainage function)
+      ! rof->lnd exchange
+      ! First edit: date
+      ! add the rof variable here
+      !50==================================================
+      rof2lnd_vars%channel_depth(g) = x2l( index_x2l_Sr_channel_depth , i )
+
+      rof2lnd_vars%hillslope_slope(g) = x2l( index_x2l_Sr_hillslope_slope , i )
+      rof2lnd_vars%hillslope_length(g) = x2l( index_x2l_Sr_hillslope_length , i )
+
+      rof2lnd_vars%elevation_profile1(g) =  x2l( index_x2l_Sr_elevation_profile1 , i )
+      rof2lnd_vars%elevation_profile2(g) =  x2l( index_x2l_Sr_elevation_profile2 , i )
+      rof2lnd_vars%elevation_profile3(g) =  x2l( index_x2l_Sr_elevation_profile3 , i )
+      rof2lnd_vars%elevation_profile4(g) =  x2l( index_x2l_Sr_elevation_profile4 , i )
+      rof2lnd_vars%elevation_profile5(g) =  x2l( index_x2l_Sr_elevation_profile5 , i )
+      rof2lnd_vars%elevation_profile6(g) =  x2l( index_x2l_Sr_elevation_profile6 , i )
+      rof2lnd_vars%elevation_profile7(g) =  x2l( index_x2l_Sr_elevation_profile7 , i )
+      rof2lnd_vars%elevation_profile8(g) =  x2l( index_x2l_Sr_elevation_profile8 , i )
+      rof2lnd_vars%elevation_profile9(g) =  x2l( index_x2l_Sr_elevation_profile9 , i )
+      rof2lnd_vars%elevation_profile10(g) =  x2l( index_x2l_Sr_elevation_profile10 , i )
+      rof2lnd_vars%elevation_profile11(g) =  x2l( index_x2l_Sr_elevation_profile11 , i )
+
+      rof2lnd_vars%gage_height(g) = x2l( index_x2l_Sr_gage_height , i )
+
+      cHillslope(g)%aElevation_profile = (/ rof2lnd_vars%elevation_profile1(g), &
+           rof2lnd_vars%elevation_profile2(g), &
+           rof2lnd_vars%elevation_profile3(g), &
+           rof2lnd_vars%elevation_profile4(g), &
+           rof2lnd_vars%elevation_profile5(g), &
+           rof2lnd_vars%elevation_profile6(g), &
+           rof2lnd_vars%elevation_profile7(g), &
+           rof2lnd_vars%elevation_profile8(g), &
+           rof2lnd_vars%elevation_profile9(g), &
+           rof2lnd_vars%elevation_profile10(g), &
+           rof2lnd_vars%elevation_profile11(g) /)
+
+      if ( rof2lnd_vars%elevation_profile1(g) &
+           .ne.  rof2lnd_vars%elevation_profile11(g) ) then
+
+         if ( rof2lnd_vars%channel_depth(g) > 0.0 ) then
+            cHillslope(g)%iFlag_hillslope = 1
+
+            cHillslope(g)%dChannel_depth = rof2lnd_vars%channel_depth(g)
+            cHillslope(g)%dHeight_below_river = rof2lnd_vars%gage_height(g)
+            !water depth has error
+            if(cHillslope(g)%dHeight_below_river > 50.0) then
+               cHillslope(g)%dHeight_below_river = 50.0
+            end if
+            if(cHillslope(g)%dHeight_below_river < 0.0) then
+               cHillslope(g)%dHeight_below_river = 0.0
+            end if
+
+         else
+            cHillslope(g)%iFlag_hillslope = 1
+            cHillslope(g)%dChannel_depth = 2.0  !rof2lnd_vars%channel_depth(g)
+            cHillslope(g)%dHeight_below_river = 1.0
+
+            !write(iulog ,*) 'mosart channel depth issue: ', rof2lnd_vars%channel_depth(g)
+            !call shr_sys_flush(iulog)
+         end if
+
+         call cHillslope(g)%initialize_hillslope_class()
+         !calculate other characteristics
+         dArea = grc_pp%area(g)
+         dResolution_grid = sqrt(dArea) * 1000.0
+         if(dResolution_grid < 5000.)then
+            dResolution_grid = 5000.0
+         end if
+         if(dResolution_grid > 50000.)then
+            !dResolution_grid = 50000.0
+         end if
+         cHillslope(g)%dWidth_hillslope = dResolution_grid
+         cHillslope(g)%dLength_hillslope = 0.5 * dResolution_grid
+         cHillslope(g)%dArea_hillslope = 0.5 * dResolution_grid * dResolution_grid
+         dDummy = cHillslope(g)%calculate_surface_slope()
+         dDummy = cHillslope(g)%calculate_bedrock_slope()
+
+
+      else
+         !the data is not transferred yet
+         cHillslope(g)%iFlag_hillslope = 0
+
+      end if
+
+   end do
 
   end subroutine lnd_import
 

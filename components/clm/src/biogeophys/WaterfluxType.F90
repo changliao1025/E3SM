@@ -128,6 +128,10 @@ module WaterfluxType
      real(r8), pointer :: mflx_drain_col           (:,:) ! drainage from groundwater table (kg H2O /s)
      real(r8), pointer :: mflx_recharge_col        (:)   ! recharge from soil column to unconfined aquifer (kg H2O /s)
 
+    ! real(r8), pointer :: qdrainage_h2sc_col  (:) !h2sc
+    ! real(r8), pointer :: qdrainage_top_col  (:) !h2sc
+
+    
    contains
  
      procedure, public  :: Init
@@ -289,6 +293,11 @@ contains
     allocate(this%mflx_sub_snow_col      (begc:endc))                ; this%mflx_sub_snow_col        (:)   = nan
     allocate(this%mflx_recharge_col      (begc:endc))                ; this%mflx_recharge_col        (:)   = nan
 
+!h2sc
+    !allocate(this%qdrainage_h2sc_col      (begc:endc))                ; this%qdrainage_h2sc_col        (:)   = nan
+    !allocate(this%qdrainage_top_col      (begc:endc))                ; this%qdrainage_top_col        (:)   = nan
+   
+
   end subroutine InitAllocate
 
   !------------------------------------------------------------------------
@@ -317,6 +326,9 @@ contains
     begg = bounds%begg; endg= bounds%endg
 
 
+
+    
+    !end of h2sc
  
   end subroutine InitHistory
 

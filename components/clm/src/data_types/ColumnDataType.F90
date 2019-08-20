@@ -159,6 +159,28 @@ module ColumnDataType
     real(r8), pointer :: vsfm_mass_col_1d   (:)   => null() ! liquid mass per unit area from VSFM [kg H2O/m^2]
     real(r8), pointer :: vsfm_smpl_col_1d   (:)   => null() ! 1D soil matrix potential liquid from VSFM [m]
     real(r8), pointer :: vsfm_soilp_col_1d  (:)   => null() ! 1D soil liquid pressure from VSFM [Pa]
+
+!for h2sc
+    real(r8), pointer :: pSlope_surface  (:) !h2sc
+    real(r8), pointer :: pSlope_bedrock  (:)
+    real(r8), pointer :: pSlope_wt  (:) !h2sc
+    real(r8), pointer :: pHk_sat  (:) !h2sc
+
+      !elevation profile for debug
+    real(r8), pointer :: pEle0  (:)
+    real(r8), pointer :: pEle1  (:)
+    real(r8), pointer :: pEle2  (:)
+    real(r8), pointer :: pEle3  (:)
+    real(r8), pointer :: pEle4  (:)
+    real(r8), pointer :: pEle5  (:)
+    real(r8), pointer :: pEle6  (:)
+    real(r8), pointer :: pEle7  (:)
+    real(r8), pointer :: pEle8  (:)
+    real(r8), pointer :: pEle9  (:)
+    real(r8), pointer :: pEle10  (:)
+
+    real(r8), pointer :: pRiver_channel_depth  (:)
+
    
   contains
     procedure, public :: Init    => col_ws_init
@@ -481,6 +503,10 @@ module ColumnDataType
     real(r8), pointer :: mflx_et              (:,:) => null() ! evapotranspiration sink from all soil coontrol volumes (kg H2O /s)
     real(r8), pointer :: mflx_drain           (:,:) => null() ! drainage from groundwater table (kg H2O /s)
     real(r8), pointer :: mflx_recharge        (:)   => null() ! recharge from soil column to unconfined aquifer (kg H2O /s)
+ 
+    !h2sc
+    real(r8), pointer :: qdrainage_h2sc  (:)
+   real(r8), pointer :: qdrainage_top  (:)
 
   contains
     procedure, public :: Init    => col_wf_init
@@ -1310,6 +1336,27 @@ contains
     allocate(this%vsfm_smpl_col_1d   (ncells))                        ; this%vsfm_smpl_col_1d   (:)   = nan
     allocate(this%vsfm_soilp_col_1d  (ncells))                        ; this%vsfm_soilp_col_1d  (:)   = nan
 
+     !for h2sc
+    allocate(this%pSlope_surface      (begc:endc))                ; this%pSlope_surface        (:)   = nan
+    allocate(this%pSlope_bedrock      (begc:endc))                ; this%pSlope_bedrock        (:)   = nan
+    allocate(this%pSlope_wt      (begc:endc))                ; this%pSlope_wt        (:)   = nan
+    allocate(this%pHk_sat      (begc:endc))                ; this%pHk_sat        (:)   = nan
+    
+    !h2sc elevation profile
+    allocate(this%pEle0    (begc:endc))                ; this%pEle0        (:)   = nan
+    allocate(this%pEle1     (begc:endc))                ; this%pEle1        (:)   = nan
+    allocate(this%pEle2     (begc:endc))                ; this%pEle2        (:)   = nan
+    allocate(this%pEle3     (begc:endc))                ; this%pEle3        (:)   = nan
+    allocate(this%pEle4     (begc:endc))                ; this%pEle4        (:)   = nan
+    allocate(this%pEle5     (begc:endc))                ; this%pEle5        (:)   = nan
+    allocate(this%pEle6     (begc:endc))                ; this%pEle6        (:)   = nan
+    allocate(this%pEle7     (begc:endc))                ; this%pEle7        (:)   = nan
+    allocate(this%pEle8     (begc:endc))                ; this%pEle8        (:)   = nan
+    allocate(this%pEle9     (begc:endc))                ; this%pEle9        (:)   = nan
+    allocate(this%pEle10     (begc:endc))                ; this%pEle10        (:)   = nan
+
+    allocate(this%pRiver_channel_depth  (begc:endc))      ; this%pRiver_channel_depth        (:)   = nan
+
     !-----------------------------------------------------------------------
     ! initialize history fields for select members of col_ws
     !-----------------------------------------------------------------------
@@ -1450,6 +1497,89 @@ contains
          avgflag='A', long_name='imbalance in snow depth (liquid water)', &
          ptr_col=this%errh2osno, c2l_scale_type='urbanf')
 
+          !h2sc 
+   !slope parameter
+    this%pSlope_surface(begc:endc) = spval
+    call hist_addfld1d (fname='sur_slp',  units='degree',  &
+         avgflag='A', long_name='surface slope', &
+         ptr_col=this%pSlope_surface, c2l_scale_type='urbanf')
+
+    this%pSlope_bedrock(begc:endc) = spval
+    call hist_addfld1d (fname='bed_slp',  units='degree',  &
+         avgflag='A', long_name='sub-surface slope', &
+         ptr_col=this%pSlope_bedrock, c2l_scale_type='urbanf')
+
+    this%pSlope_wt(begc:endc) = spval
+    call hist_addfld1d (fname='wt_slp',  units='degree',  &
+         avgflag='A', long_name='water table slope', &
+         ptr_col=this%pSlope_wt, c2l_scale_type='urbanf')
+
+         this%pHk_sat(begc:endc) = spval
+    call hist_addfld1d (fname='hk_sat',  units='mm/s',  &
+         avgflag='A', long_name='saturated hk', &
+         ptr_col=this%pHk_sat, c2l_scale_type='urbanf')         
+
+    !elevation profile
+    this%pEle0(begc:endc) = spval
+    call hist_addfld1d (fname='ele0',  units='m',  &
+         avgflag='A', long_name='elevation profile 0', &
+         ptr_col=this%pEle0, c2l_scale_type='urbanf')
+
+    this%pEle1(begc:endc) = spval
+    call hist_addfld1d (fname='ele1',  units='m',  &
+         avgflag='A', long_name='elevation profile 1', &
+         ptr_col=this%pEle1, c2l_scale_type='urbanf')
+
+    this%pEle2(begc:endc) = spval
+    call hist_addfld1d (fname='ele2',  units='m',  &
+         avgflag='A', long_name='elevation profile 2', &
+         ptr_col=this%pEle2, c2l_scale_type='urbanf')
+
+    this%pEle3(begc:endc) = spval
+    call hist_addfld1d (fname='ele3',  units='m',  &
+         avgflag='A', long_name='elevation profile 3', &
+         ptr_col=this%pEle3, c2l_scale_type='urbanf')
+
+    this%pEle4(begc:endc) = spval
+    call hist_addfld1d (fname='ele4',  units='m',  &
+         avgflag='A', long_name='elevation profile 4', &
+         ptr_col=this%pEle4, c2l_scale_type='urbanf')
+
+    this%pEle5(begc:endc) = spval
+    call hist_addfld1d (fname='ele5',  units='m',  &
+         avgflag='A', long_name='elevation profile 5', &
+         ptr_col=this%pEle5, c2l_scale_type='urbanf')
+
+    this%pEle6(begc:endc) = spval
+    call hist_addfld1d (fname='ele6',  units='m',  &
+         avgflag='A', long_name='elevation profile 6', &
+         ptr_col=this%pEle6, c2l_scale_type='urbanf')
+
+    this%pEle7(begc:endc) = spval
+    call hist_addfld1d (fname='ele7',  units='m',  &
+         avgflag='A', long_name='elevation profile 7', &
+         ptr_col=this%pEle7, c2l_scale_type='urbanf')
+
+    this%pEle8(begc:endc) = spval
+    call hist_addfld1d (fname='ele8',  units='m',  &
+         avgflag='A', long_name='elevation profile 8', &
+         ptr_col=this%pEle8, c2l_scale_type='urbanf')
+
+    this%pEle9(begc:endc) = spval
+    call hist_addfld1d (fname='ele9',  units='m',  &
+         avgflag='A', long_name='elevation profile 9', &
+         ptr_col=this%pEle9, c2l_scale_type='urbanf')
+
+    this%pEle10(begc:endc) = spval
+    call hist_addfld1d (fname='ele10',  units='m',  &
+         avgflag='A', long_name='elevation profile 10', &
+         ptr_col=this%pEle10, c2l_scale_type='urbanf')
+
+     this%pRiver_channel_depth(begc:endc) = spval
+     call hist_addfld1d (fname='river_channel_depth',  units='m',  &
+              avgflag='A', long_name='pRiver_channel_depth ', &
+              ptr_col=this%pRiver_channel_depth, c2l_scale_type='urbanf')
+         !end of h2sc
     !-----------------------------------------------------------------------
     ! set cold-start initial values for select members of col_ws
     !-----------------------------------------------------------------------
@@ -5165,6 +5295,10 @@ contains
     allocate(this%mflx_et                (begc:endc,1:nlevgrnd))  ; this%mflx_et                         (:,:) = nan
     allocate(this%mflx_drain             (begc:endc,1:nlevgrnd))  ; this%mflx_drain                      (:,:) = nan
     allocate(this%mflx_recharge          (begc:endc))             ; this%mflx_recharge                   (:)   = nan
+
+    !h2sc variables
+    allocate(this%qdrainage_h2sc      (begc:endc))                ; this%qdrainage_h2sc        (:)   = nan
+    allocate(this%qdrainage_top      (begc:endc))                ; this%qdrainage_top        (:)   = nan
     
     !-----------------------------------------------------------------------
     ! initialize history fields for select members of col_wf
@@ -5240,6 +5374,8 @@ contains
          avgflag='A', long_name='saturation excess drainage', &
          ptr_col=this%qflx_rsub_sat, c2l_scale_type='urbanf')
 
+  
+
     this%qflx_snofrz(begc:endc) = spval
     call hist_addfld1d (fname='QSNOFRZ', units='kg/m2/s', &
          avgflag='A', long_name='column-integrated snow freezing rate', &
@@ -5265,6 +5401,17 @@ contains
             avgflag='A', long_name='ice melt', &
             ptr_col=this%qflx_glcice_melt, l2g_scale_type='ice')
     end if
+
+
+    !h2sc
+   this%qdrainage_h2sc(begc:endc) = spval
+   call hist_addfld1d (fname='QDRAI_h2sc',  units='mm/s',  &
+        avgflag='A', long_name='sub-surface h2sc drainage', &
+        ptr_col=this%qdrainage_h2sc, c2l_scale_type='urbanf')
+   this%qdrainage_top(begc:endc) = spval
+   call hist_addfld1d (fname='QDRAI_top',  units='mm/s',  &
+        avgflag='A', long_name='sub-surface topology drainage', &
+        ptr_col=this%qdrainage_top, c2l_scale_type='urbanf')
 
     ! As defined here, snow_sources - snow_sinks will equal the change in h2osno at any
     ! given time step but only if there is at least one snow layer (for all landunits 

@@ -115,6 +115,30 @@ module clm_cpl_indices
   
   integer, public :: nflds_x2l = 0
 
+   !50==================================================
+  ! Author: Chang Liao( changliao at pnnl.gov )
+  ! Module: H2SC (hillslope based soil column drainage function)
+  ! rof->lnd exchange
+  ! First edit: 20180530
+  !50==================================================
+  integer, public :: index_x2l_Sr_channel_depth  !cpl->lnd channel depth for land 
+  integer, public :: index_x2l_Sr_gage_height  !cpl->lnd gage height for land 
+  integer, public :: index_x2l_Sr_hillslope_slope  !cpl->lnd gage height for land 
+  integer, public :: index_x2l_Sr_hillslope_length  !cpl->lnd gage height for land 
+
+  integer, public :: index_x2l_Sr_elevation_profile1 !rof->lnd gage height for land 
+  integer, public :: index_x2l_Sr_elevation_profile2 !rof->lnd gage height for land 
+  integer, public :: index_x2l_Sr_elevation_profile3 !rof->lnd gage height for land 
+  integer, public :: index_x2l_Sr_elevation_profile4 !rof->lnd gage height for land 
+  integer, public :: index_x2l_Sr_elevation_profile5 !rof->lnd gage height for land 
+  integer, public :: index_x2l_Sr_elevation_profile6 !rof->lnd gage height for land 
+  integer, public :: index_x2l_Sr_elevation_profile7 !rof->lnd gage height for land
+  integer, public :: index_x2l_Sr_elevation_profile8 !rof->lnd gage height for land 
+  integer, public :: index_x2l_Sr_elevation_profile9 !rof->lnd gage height for land 
+  integer, public :: index_x2l_Sr_elevation_profile10 !rof->lnd gage height for land
+  integer, public :: index_x2l_Sr_elevation_profile11 !rof->lnd gage height for land
+
+  !-----------------------------------------------------------------------
   !-----------------------------------------------------------------------
 
 contains
@@ -256,6 +280,31 @@ contains
 
     index_x2l_Flrr_flood    = mct_avect_indexra(x2l,'Flrr_flood')
 
+
+    !50==================================================
+  ! Author: Chang Liao( changliao at pnnl.gov )
+  ! Module: H2SC (hillslope based soil column drainage function)
+  ! rof->lnd exchange
+  ! First edit: 20180530
+  !50==================================================
+
+  index_x2l_Sr_channel_depth   = mct_avect_indexra(x2l,'Sr_channel_depth')
+  index_x2l_Sr_gage_height   = mct_avect_indexra(x2l,'Sr_gage_height')
+
+  index_x2l_Sr_hillslope_slope   = mct_avect_indexra(x2l,'Sr_hillslope_slope')
+  index_x2l_Sr_hillslope_length   = mct_avect_indexra(x2l,'Sr_hillslope_length')
+
+  index_x2l_Sr_elevation_profile1 = mct_avect_indexra(x2l,'Sr_elevation_profile1')
+  index_x2l_Sr_elevation_profile2 = mct_avect_indexra(x2l,'Sr_elevation_profile2')
+  index_x2l_Sr_elevation_profile3 = mct_avect_indexra(x2l,'Sr_elevation_profile3')
+  index_x2l_Sr_elevation_profile4 = mct_avect_indexra(x2l,'Sr_elevation_profile4')
+  index_x2l_Sr_elevation_profile5 = mct_avect_indexra(x2l,'Sr_elevation_profile5')
+  index_x2l_Sr_elevation_profile6 = mct_avect_indexra(x2l,'Sr_elevation_profile6')
+  index_x2l_Sr_elevation_profile7 = mct_avect_indexra(x2l,'Sr_elevation_profile7')
+  index_x2l_Sr_elevation_profile8 = mct_avect_indexra(x2l,'Sr_elevation_profile8')
+  index_x2l_Sr_elevation_profile9 = mct_avect_indexra(x2l,'Sr_elevation_profile9')
+  index_x2l_Sr_elevation_profile10 = mct_avect_indexra(x2l,'Sr_elevation_profile10')
+  index_x2l_Sr_elevation_profile11 = mct_avect_indexra(x2l,'Sr_elevation_profile11')
     !-------------------------------------------------------------
     ! glc coupling
     !-------------------------------------------------------------
