@@ -6,7 +6,7 @@ module clm_cpl_indices
   !    fields needed by the land-ice component (sno).
   !
   ! !USES:
-  
+
   use shr_sys_mod,    only : shr_sys_abort
   implicit none
 
@@ -18,8 +18,8 @@ module clm_cpl_indices
   !
   ! !PUBLIC DATA MEMBERS:
   !
-  integer , public :: glc_nec     ! number of elevation classes for glacier_mec landunits 
-                                  ! (from coupler) - must equal maxpatch_glcmec from namelist
+  integer , public :: glc_nec     ! number of elevation classes for glacier_mec landunits
+  ! (from coupler) - must equal maxpatch_glcmec from namelist
   integer , parameter, private:: glc_nec_max = 100
 
   ! lnd -> drv (required)
@@ -39,7 +39,7 @@ module clm_cpl_indices
   integer, public ::index_l2x_Sl_snowh        ! snow height
   integer, public ::index_l2x_Sl_u10          ! 10m wind
   integer, public ::index_l2x_Sl_ddvel        ! dry deposition velocities (optional)
-  integer, public ::index_l2x_Sl_fv           ! friction velocity  
+  integer, public ::index_l2x_Sl_fv           ! friction velocity
   integer, public ::index_l2x_Sl_ram1         ! aerodynamical resistance
   integer, public ::index_l2x_Sl_soilw        ! volumetric soil water
   integer, public ::index_l2x_Fall_taux       ! wind stress, zonal
@@ -48,11 +48,11 @@ module clm_cpl_indices
   integer, public ::index_l2x_Fall_sen        ! sensible        heat flux
   integer, public ::index_l2x_Fall_lwup       ! upward longwave heat flux
   integer, public ::index_l2x_Fall_evap       ! evaporation     water flux
-  integer, public ::index_l2x_Fall_swnet      ! heat flux       shortwave net       
+  integer, public ::index_l2x_Fall_swnet      ! heat flux       shortwave net
   integer, public ::index_l2x_Fall_fco2_lnd   ! co2 flux **For testing set to 0
-  integer, public ::index_l2x_Fall_flxdst1    ! dust flux size bin 1    
-  integer, public ::index_l2x_Fall_flxdst2    ! dust flux size bin 2    
-  integer, public ::index_l2x_Fall_flxdst3    ! dust flux size bin 3    
+  integer, public ::index_l2x_Fall_flxdst1    ! dust flux size bin 1
+  integer, public ::index_l2x_Fall_flxdst2    ! dust flux size bin 2
+  integer, public ::index_l2x_Fall_flxdst3    ! dust flux size bin 3
   integer, public ::index_l2x_Fall_flxdst4    ! dust flux size bin 4
   integer, public ::index_l2x_Fall_flxvoc     ! MEGAN fluxes
 
@@ -100,41 +100,41 @@ module clm_cpl_indices
   integer, public ::index_x2l_Faxa_dstdry2    ! flux: Size 2 dust -- dry deposition
   integer, public ::index_x2l_Faxa_dstdry3    ! flux: Size 3 dust -- dry deposition
   integer, public ::index_x2l_Faxa_dstdry4    ! flux: Size 4 dust -- dry deposition
- 
+
   integer, public ::index_x2l_Flrr_flood      ! rtm->lnd rof (flood) flux
   integer, public ::index_x2l_Flrr_volr       ! rtm->lnd rof volr total volume
   integer, public ::index_x2l_Flrr_volrmch    ! rtm->lnd rof volr main channel volume
 
   ! In the following, index 0 is bare land, other indices are glc elevation classes
   integer, public ::index_x2l_Sg_frac(0:glc_nec_max)   = 0   ! Fraction of glacier from glc model
-  integer, public ::index_x2l_Sg_topo(0:glc_nec_max)   = 0   ! Topo height from glc model 
+  integer, public ::index_x2l_Sg_topo(0:glc_nec_max)   = 0   ! Topo height from glc model
   integer, public ::index_x2l_Flgg_hflx(0:glc_nec_max) = 0   ! Heat flux from glc model
-  
+
   integer, public ::index_x2l_Sg_icemask
   integer, public ::index_x2l_Sg_icemask_coupled_fluxes
-  
+
   integer, public :: nflds_x2l = 0
 
-   !50==================================================
+  !50==================================================
   ! Author: Chang Liao( changliao at pnnl.gov )
   ! Module: H2SC (hillslope based soil column drainage function)
   ! rof->lnd exchange
   ! First edit: 20180530
   !50==================================================
-  integer, public :: index_x2l_Sr_channel_depth  !cpl->lnd channel depth for land 
-  integer, public :: index_x2l_Sr_gage_height  !cpl->lnd gage height for land 
-  integer, public :: index_x2l_Sr_hillslope_slope  !cpl->lnd gage height for land 
-  integer, public :: index_x2l_Sr_hillslope_length  !cpl->lnd gage height for land 
+  integer, public :: index_x2l_Sr_channel_depth  !cpl->lnd channel depth for land
+  integer, public :: index_x2l_Sr_gage_height  !cpl->lnd gage height for land
+  integer, public :: index_x2l_Sr_hillslope_slope  !cpl->lnd gage height for land
+  integer, public :: index_x2l_Sr_hillslope_length  !cpl->lnd gage height for land
 
-  integer, public :: index_x2l_Sr_elevation_profile1 !rof->lnd gage height for land 
-  integer, public :: index_x2l_Sr_elevation_profile2 !rof->lnd gage height for land 
-  integer, public :: index_x2l_Sr_elevation_profile3 !rof->lnd gage height for land 
-  integer, public :: index_x2l_Sr_elevation_profile4 !rof->lnd gage height for land 
-  integer, public :: index_x2l_Sr_elevation_profile5 !rof->lnd gage height for land 
-  integer, public :: index_x2l_Sr_elevation_profile6 !rof->lnd gage height for land 
+  integer, public :: index_x2l_Sr_elevation_profile1 !rof->lnd gage height for land
+  integer, public :: index_x2l_Sr_elevation_profile2 !rof->lnd gage height for land
+  integer, public :: index_x2l_Sr_elevation_profile3 !rof->lnd gage height for land
+  integer, public :: index_x2l_Sr_elevation_profile4 !rof->lnd gage height for land
+  integer, public :: index_x2l_Sr_elevation_profile5 !rof->lnd gage height for land
+  integer, public :: index_x2l_Sr_elevation_profile6 !rof->lnd gage height for land
   integer, public :: index_x2l_Sr_elevation_profile7 !rof->lnd gage height for land
-  integer, public :: index_x2l_Sr_elevation_profile8 !rof->lnd gage height for land 
-  integer, public :: index_x2l_Sr_elevation_profile9 !rof->lnd gage height for land 
+  integer, public :: index_x2l_Sr_elevation_profile8 !rof->lnd gage height for land
+  integer, public :: index_x2l_Sr_elevation_profile9 !rof->lnd gage height for land
   integer, public :: index_x2l_Sr_elevation_profile10 !rof->lnd gage height for land
   integer, public :: index_x2l_Sr_elevation_profile11 !rof->lnd gage height for land
 
@@ -146,7 +146,7 @@ contains
   !-----------------------------------------------------------------------
   subroutine clm_cpl_indices_set( )
     !
-    ! !DESCRIPTION: 
+    ! !DESCRIPTION:
     ! Set the coupler indices needed by the land model coupler
     ! interface.
     !
@@ -168,7 +168,7 @@ contains
     ! !LOCAL VARIABLES:
     type(mct_aVect)   :: l2x      ! temporary, land to coupler
     type(mct_aVect)   :: x2l      ! temporary, coupler to land
-    integer           :: num 
+    integer           :: num
     character(len= 2) :: cnum
     character(len=64) :: name
     character(len=32) :: subname = 'clm_cpl_indices_set'  ! subroutine name
@@ -184,7 +184,7 @@ contains
     nflds_l2x = mct_avect_nRattr(l2x)
 
     !-------------------------------------------------------------
-    ! clm -> drv 
+    ! clm -> drv
     !-------------------------------------------------------------
 
     index_l2x_Flrl_rofsur   = mct_avect_indexra(l2x,'Flrl_rofsur')
@@ -282,40 +282,40 @@ contains
 
 
     !50==================================================
-  ! Author: Chang Liao( changliao at pnnl.gov )
-  ! Module: H2SC (hillslope based soil column drainage function)
-  ! rof->lnd exchange
-  ! First edit: 20180530
-  !50==================================================
+    ! Author: Chang Liao( changliao at pnnl.gov )
+    ! Module: H2SC (hillslope based soil column drainage function)
+    ! rof->lnd exchange
+    ! First edit: 20180530
+    !50==================================================
 
-  index_x2l_Sr_channel_depth   = mct_avect_indexra(x2l,'Sr_channel_depth')
-  index_x2l_Sr_gage_height   = mct_avect_indexra(x2l,'Sr_gage_height')
+    index_x2l_Sr_channel_depth   = mct_avect_indexra(x2l,'Sr_channel_depth')
+    index_x2l_Sr_gage_height   = mct_avect_indexra(x2l,'Sr_gage_height')
 
-  index_x2l_Sr_hillslope_slope   = mct_avect_indexra(x2l,'Sr_hillslope_slope')
-  index_x2l_Sr_hillslope_length   = mct_avect_indexra(x2l,'Sr_hillslope_length')
+    index_x2l_Sr_hillslope_slope   = mct_avect_indexra(x2l,'Sr_hillslope_slope')
+    index_x2l_Sr_hillslope_length   = mct_avect_indexra(x2l,'Sr_hillslope_length')
 
-  index_x2l_Sr_elevation_profile1 = mct_avect_indexra(x2l,'Sr_elevation_profile1')
-  index_x2l_Sr_elevation_profile2 = mct_avect_indexra(x2l,'Sr_elevation_profile2')
-  index_x2l_Sr_elevation_profile3 = mct_avect_indexra(x2l,'Sr_elevation_profile3')
-  index_x2l_Sr_elevation_profile4 = mct_avect_indexra(x2l,'Sr_elevation_profile4')
-  index_x2l_Sr_elevation_profile5 = mct_avect_indexra(x2l,'Sr_elevation_profile5')
-  index_x2l_Sr_elevation_profile6 = mct_avect_indexra(x2l,'Sr_elevation_profile6')
-  index_x2l_Sr_elevation_profile7 = mct_avect_indexra(x2l,'Sr_elevation_profile7')
-  index_x2l_Sr_elevation_profile8 = mct_avect_indexra(x2l,'Sr_elevation_profile8')
-  index_x2l_Sr_elevation_profile9 = mct_avect_indexra(x2l,'Sr_elevation_profile9')
-  index_x2l_Sr_elevation_profile10 = mct_avect_indexra(x2l,'Sr_elevation_profile10')
-  index_x2l_Sr_elevation_profile11 = mct_avect_indexra(x2l,'Sr_elevation_profile11')
+    index_x2l_Sr_elevation_profile1 = mct_avect_indexra(x2l,'Sr_elevation_profile1')
+    index_x2l_Sr_elevation_profile2 = mct_avect_indexra(x2l,'Sr_elevation_profile2')
+    index_x2l_Sr_elevation_profile3 = mct_avect_indexra(x2l,'Sr_elevation_profile3')
+    index_x2l_Sr_elevation_profile4 = mct_avect_indexra(x2l,'Sr_elevation_profile4')
+    index_x2l_Sr_elevation_profile5 = mct_avect_indexra(x2l,'Sr_elevation_profile5')
+    index_x2l_Sr_elevation_profile6 = mct_avect_indexra(x2l,'Sr_elevation_profile6')
+    index_x2l_Sr_elevation_profile7 = mct_avect_indexra(x2l,'Sr_elevation_profile7')
+    index_x2l_Sr_elevation_profile8 = mct_avect_indexra(x2l,'Sr_elevation_profile8')
+    index_x2l_Sr_elevation_profile9 = mct_avect_indexra(x2l,'Sr_elevation_profile9')
+    index_x2l_Sr_elevation_profile10 = mct_avect_indexra(x2l,'Sr_elevation_profile10')
+    index_x2l_Sr_elevation_profile11 = mct_avect_indexra(x2l,'Sr_elevation_profile11')
     !-------------------------------------------------------------
     ! glc coupling
     !-------------------------------------------------------------
 
     glc_nec = 0
 
-    do num = 0,glc_nec_max 
-    
+    do num = 0,glc_nec_max
+
        write(cnum,'(i2.2)') num
        name = 'Sg_ice_covered' // cnum
-       index_x2l_Sg_frac(num)   = mct_avect_indexra(x2l,trim(name),perrwith='quiet') 
+       index_x2l_Sg_frac(num)   = mct_avect_indexra(x2l,trim(name),perrwith='quiet')
        name = 'Sg_topo' // cnum
        index_x2l_Sg_topo(num)   = mct_avect_indexra(x2l,trim(name),perrwith='quiet')
        name = 'Flgg_hflx' // cnum
@@ -327,10 +327,10 @@ contains
        end if
        glc_nec = num
     end do
-    
+
     index_x2l_Sg_icemask = mct_avect_indexra(x2l,'Sg_icemask',perrwith='quiet')
     index_x2l_Sg_icemask_coupled_fluxes = mct_avect_indexra(x2l,'Sg_icemask_coupled_fluxes',perrwith='quiet')
-    
+
     if (glc_nec == glc_nec_max) then
        call shr_sys_abort (subname // 'error: glc_nec_cpl cannot equal glc_nec_max')
     end if
@@ -355,6 +355,6 @@ contains
 
   end subroutine clm_cpl_indices_set
 
-!=======================================================================
+  !=======================================================================
 
 end module clm_cpl_indices

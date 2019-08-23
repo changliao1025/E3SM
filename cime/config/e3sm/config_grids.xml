@@ -2240,6 +2240,8 @@
     <required_gridmap grid1="ocn_grid" grid2="rof_grid" >ROF2OCN_ICE_RMAPNAME</required_gridmap>
     <required_gridmap grid1="lnd_grid" grid2="rof_grid">LND2ROF_FMAPNAME</required_gridmap>
     <required_gridmap grid1="lnd_grid" grid2="rof_grid">ROF2LND_FMAPNAME</required_gridmap>
+    <required_gridmap grid1="lnd_grid" grid2="rof_grid">ROF2LND_SMAPNAME</required_gridmap>
+     <!--<required_gridmap grid1="lnd_grid" grid2="rof_grid">LND2ROF_SMAPNAME</required_gridmap>-->
   </required_gridmaps>
 
   <gridmaps>
@@ -2785,6 +2787,13 @@
     </gridmap>
 
     <!--- river to land and land to river mapping files    -->
+
+    <!--- h2sc start    -->
+    <gridmap lnd_grid="ne30np4" rof_grid="r05">            
+      <!--<map name="LND2ROF_SMAPNAME">lnd/clm2/mappingdata/maps/ne30np4/map_ne30np4_to_0.5x0.5rtm_aave_da_110320.nc</map> -->
+      <map name="ROF2LND_SMAPNAME">lnd/clm2/mappingdata/maps/ne30np4/map_0.5x0.5_nomask_to_ne30np4_nomask_aave_da_c121019.nc</map>
+    </gridmap>
+    <!--- h2sc end    -->
 
     <gridmap lnd_grid="360x720cru" rof_grid="r01">
       <map name="LND2ROF_FMAPNAME">lnd/clm2/mappingdata/maps/0.1x0.1/map_360x720_nomask_to_0.1x0.1_nomask_aave_da_c130107.nc</map>

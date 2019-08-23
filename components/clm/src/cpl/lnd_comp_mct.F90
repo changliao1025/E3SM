@@ -473,8 +473,7 @@ call elm_Init_h2sc(bounds)
     ! rof->lnd exchange
     ! First edit: 20180625
     ! Details: Replace the original import to the new import
-    !50==================================================
-    !call lnd_import2( bounds, x2l_l%rattr, atm2lnd_vars, glc2lnd_vars, rof2lnd_vars)
+    !50==================================================    
     call lnd_import( bounds, x2l_l%rattr, atm2lnd_vars, glc2lnd_vars, rof2lnd_vars)
     call t_stopf ('lc_lnd_import')
 
@@ -502,7 +501,7 @@ call elm_Init_h2sc(bounds)
        nstep = get_nstep()
        caldayp1 = get_curr_calday(offset=dtime)
        if (nstep == 0) then
-	  doalb = .false. 	
+	      doalb = .false. 	
        else if (nstep == 1) then 
           doalb = (abs(nextsw_cday- caldayp1) < 1.e-10_r8) 
        else

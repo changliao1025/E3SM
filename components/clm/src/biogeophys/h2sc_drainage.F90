@@ -272,7 +272,7 @@ contains
     dFlow_downslope_out = dSaturate_hydraulic_conductivity_in * dHeight_below_river_in &
          * tan(dDummy_slope) / dLength_hillslope_in
 
-     !===============================================
+    !===============================================
     this%dFlow_downslope = dFlow_downslope_out
     !===============================================
     return
@@ -623,9 +623,9 @@ contains
        !completely flooded
        aSeepage_mask_out(:) = 1
     end select
-    
+
     this%aSeepage_mask = aSeepage_mask_out
-    
+
     this%iSeepage_count =  sum( this%aSeepage_mask )
     return
   end function calculate_seepage_extent
@@ -644,7 +644,7 @@ contains
     real(kind = r8)::dummy
     integer :: iIndex
     iIndex = sum( this%aSeepage_mask )
-    
+
     dummy = real(iIndex)/ nElevation_interval_in
     dLength_seepage_out = dummy * dLength_hillslope_in
     this%dLength_seepage = dLength_seepage_out

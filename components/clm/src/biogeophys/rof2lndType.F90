@@ -1,5 +1,5 @@
 
-   !50==================================================
+!50==================================================
  ! Author: Chang Liao( changliao at pnnl.gov )
  ! Module: H2SC (hillslope based soil column drainage function)
  ! rof->lnd exchange

@@ -1531,6 +1531,24 @@
     <desc>rof2lnd flux mapping file</desc>
   </entry>
 
+  <entry id="ROF2LND_SMAPTYPE">
+    <type>char</type>
+    <valid_values>X,Y</valid_values>
+    <default_value>Y</default_value>
+    <group>run_domain</group>
+    <file>env_run.xml</file>
+    <desc>rof2lnd state mapping file decomp type</desc>
+  </entry>
+
+  <!-- h2sc -->
+  <entry id="ROF2LND_SMAPNAME">
+    <type>char</type>
+    <default_value>idmap</default_value>
+    <group>run_domain</group>
+    <file>env_run.xml</file>
+    <desc>rof2lnd state mapping file</desc>
+  </entry>
+
   <entry id="ROF2LND_FMAPTYPE">
     <type>char</type>
     <valid_values>X,Y</valid_values>
