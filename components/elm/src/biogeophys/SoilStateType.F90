@@ -27,6 +27,10 @@ module SoilStateType
   use VegetationType  , only : veg_pp      
   use topounit_varcon , only : max_topounits
   use GridcellType    , only : grc_pp   
+
+  use elm_varctl       , only : use_h2sc 
+
+  use SoilTextureMod !h2sc
   !
   implicit none
   save
@@ -68,6 +72,9 @@ module SoilStateType
      real(r8), pointer :: porosity_col         (:,:) ! col soil porisity (1-bulk_density/soil_density) (VIC)
      real(r8), pointer :: eff_porosity_col     (:,:) ! col effective porosity = porosity - vol_ice (nlevgrnd)
      real(r8), pointer :: gwc_thr_col          (:)   ! col threshold soil moisture based on clay content
+
+
+     real(r8) ,pointer  :: anisotropy_col (:,:)               ! read in - soil anisotropy (needs to be a pointer for use in ncdio)
 
   !!!   ! thermal conductivity / heat capacity
      real(r8), pointer :: thk_col              (:,:) ! col thermal conductivity of each layer [W/m-K]
@@ -173,6 +180,9 @@ contains
     allocate(this%eff_porosity_col     (begc:endc,nlevgrnd))            ; this%eff_porosity_col     (:,:) = spval
     allocate(this%gwc_thr_col          (begc:endc))                     ; this%gwc_thr_col          (:)   = spval
 
+    allocate(this%anisotropy_col (begc:endc,nlevgrnd))            ; this%anisotropy_col           (:,:) = spval
+
+
     allocate(this%thk_col              (begc:endc,-nlevsno+1:nlevgrnd)) ; this%thk_col              (:,:) = spval
     allocate(this%tkmg_col             (begc:endc,nlevgrnd))            ; this%tkmg_col             (:,:) = spval
     allocate(this%tkdry_col            (begc:endc,nlevgrnd))            ; this%tkdry_col            (:,:) = spval
@@ -230,6 +240,15 @@ contains
     call hist_addfld2d (fname='SMP',  units='mm', type2d='levgrnd',  &
          avgflag='A', long_name='soil matric potential (vegetated landunits only)', &
          ptr_col=this%smp_l_col, set_spec=spval, l2g_scale_type='veg', default=active)
+
+
+         if (use_h2sc) then
+            this%anisotropy_col(begc:endc,:) = spval
+            call hist_addfld2d (fname='anisotropy', units='1', type2d='levgrnd', &
+                 avgflag='A', long_name='soil anisotropy', &
+                 ptr_col=this%anisotropy_col, default='inactive')
+         end if
+
 
     if (use_cn) then
        this%bsw_col(begc:endc,:) = spval
@@ -382,6 +401,8 @@ contains
     integer            :: begc, endc
     integer            :: begg, endg
     real(r8), parameter :: min_liquid_pressure = -10132500._r8 ! Minimum soil liquid water pressure [mm]
+
+    character(len= 15) :: sSoilTexture !h2sc
     !-----------------------------------------------------------------------
     begc = bounds%begc; endc= bounds%endc
     begg = bounds%begg; endg= bounds%endg
@@ -877,6 +898,61 @@ contains
        endif
 
     end do
+
+    ! --------------------------------------------------------------------
+    ! h2sc Set soil hydraulic anisotropy 
+    ! --------------------------------------------------------------------
+    do c = bounds%begc, bounds%endc
+      g = col_pp%gridcell(c)
+      l = col_pp%landunit(c)
+      nlevbed = col_pp%nlevbed(c)
+      t = col_pp%topounit(c)
+      topi = grc_pp%topi(g)
+      ti = t - topi + 1
+      do lev = 1,nlevgrnd
+           if ( lev <= nlevsoi )then
+               clay    =  this%cellclay_col(c,lev)
+               sand    =  this%cellsand_col(c,lev)                
+           else
+               clay    = this%cellclay_col(c,nlevsoi)
+               sand    = this%cellsand_col(c,nlevsoi)                
+           end if
+           !calculate soil text
+           sSoilTexture = what_soil_texture_single( real(sand), real(clay) )
+     
+           SELECT CASE (sSoilTexture)
+              CASE ("sand")
+                 this%anisotropy_col(c,lev ) = 2
+              CASE ("loamy sand")
+                 this%anisotropy_col(c,lev ) = 3
+              CASE ("sandy loam")
+                 this%anisotropy_col(c,lev  ) = 14 !updated
+              CASE ("silt loam")
+                 this%anisotropy_col(c,lev  ) = 10
+              CASE ("loam")
+                 this%anisotropy_col(c,lev  ) = 12
+              CASE ("sandy clay loam")
+                 this%anisotropy_col(c,lev  ) = 14
+              CASE ("silty clay loam")
+                 this%anisotropy_col(c,lev  ) = 20
+              CASE ("clay loam")
+                 this%anisotropy_col(c,lev  ) = 24
+              CASE ("sandy clay")
+                 this%anisotropy_col(c,lev ) = 28
+              CASE ("silty clay")
+                 this%anisotropy_col(c,lev  ) = 40
+              CASE ("clay")
+                 this%anisotropy_col(c,lev  ) = 48
+              CASE ("silt")
+                 this%anisotropy_col(c,lev  ) = 2
+              CASE DEFAULT
+                 this%anisotropy_col(c,lev  ) = 2
+           END SELECT
+
+      end do
+
+   end do
+
 
     ! --------------------------------------------------------------------
     ! Initialize threshold soil moisture and mass fracion of clay limited to 0.20

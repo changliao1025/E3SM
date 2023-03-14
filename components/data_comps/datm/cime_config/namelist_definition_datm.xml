@@ -5,185 +5,185 @@
 <entry_id version="2.0">
 
   <!--
-    Values to use by default for creation of DATM model datm namelists.
-    The element names are the same as the corresponding namelist
-    variables.  Values that depend on the model configuration use
-    attributes to express the dependency.  The recognized attributes
-    are: stream, grid
+      Values to use by default for creation of DATM model datm namelists.
+      The element names are the same as the corresponding namelist
+      variables.  Values that depend on the model configuration use
+      attributes to express the dependency.  The recognized attributes
+      are: stream, grid
 
-    strm_year_first is the first year of the stream data that will be used
-    strm_year_last  is the last  year of the stream data that will be used
-    strm_year_align is the model year that will be aligned with stream data for year_first
+strm_year_first is the first year of the stream data that will be used
+strm_year_last  is the last  year of the stream data that will be used
+strm_year_align is the model year that will be aligned with stream data for year_first
 
-    Replace any instance of the following substring indicators with the appropriate values:
-    %y    => year from the range yearfirst to yearlast
-    %ym   => year-month from the range yearfirst to yearlast with all 12 months
-    %ymd  => year-month-day from the range yearfirst to yearlast with all 12 months
+Replace any instance of the following substring indicators with the appropriate values:
+%y    => year from the range yearfirst to yearlast
+%ym   => year-month from the range yearfirst to yearlast with all 12 months
+%ymd  => year-month-day from the range yearfirst to yearlast with all 12 months
 
-    In datm_in, streams namelist input has the form
-     streams = 'stream1.txt year_align year_first year_last ',
-               'stream2.txt year_align year_first year_last ',
-                ...
-               'streamN.txt year_align year_first year_last '
+In datm_in, streams namelist input has the form
+streams = 'stream1.txt year_align year_first year_last ',
+'stream2.txt year_align year_first year_last ',
+...
+'streamN.txt year_align year_first year_last '
 
-    Each mode below, except for presaero, has a set of streams associated with it
-    The presaero stream, is associated with all modes
+Each mode below, except for presaero, has a set of streams associated with it
+The presaero stream, is associated with all modes
 
-    Currently the following streams are supported (term definitions precede the streams)
+Currently the following streams are supported (term definitions precede the streams)
 
-    CLM_QIAN		= Run with the CLM Qian dataset valid from 1948 to 2004 (force CLM)
-    CLM_QIAN_WISO	= Run with the CLM Qian dataset with isotopes valid from 2000 to 2004 (force CLM)
-    CLMCRUNCEP		= Run with the CLM CRU NCEP V4 ( default ) forcing valid from 1900 to 2010 (force CLM)
-    CLMCRUNCEPv7 	= Run with the CLM CRU NCEP V7 forcing valid from 1900 to 2010 (force CLM)
-    CLMGSWP3v1		= Run with the CLM GSWP3 V1 forcing (force CLM)
-    CLMMOSARTTEST   	= Run with the CLM NLDAS data (force CLM) for testing MOSART
-    CLMNLDAS2		= Run with the CLM NLDAS2 regional forcing valid from 1980 to 2018 (force CLM)
-    CLM1PT		= Run with supplied single point data (force CLM)
-    CORE2_NYF		= CORE2 normal year forcing (for forcing POP and CICE)
-    CORE2_IAF		= CORE2 intra-annual year forcing (for forcing POP and CICE)
-    CORE_IAF_JRA	= JRA55 intra-annual year forcing (for forcing POP and CICE)
-    IAF_JRA_1p5         = JRA55 intra-annual year forcing, v1.5, through 2020 (for forcing MPAS-Ocean and MPAS-Seaice)
-    CORE_IAF_JRA_1p4_2018 = JRA55 intra-annual year forcing, v1.4, through 2018 (for forcing POP and CICE)
-    CORE_RYF8485_JRA = JRA55 repeat year forcing, v1.3, 1984-1985 (for forcing POP and CICE)
-    CORE_RYF9091_JRA = JRA55 repeat year forcing, v1.3, 1990-1991 (for forcing POP and CICE)
-    CORE_RYF0304_JRA = JRA55 repeat year forcing, v1.3, 2003-2004 (for forcing POP and CICE)
-    CPLHIST     	= Streams for lnd or ocn/ice forcing used for spinup
-    presaero		= Prescribed aerosol forcing
-    topo		= Surface topography
-    co2tseries		= Time series of prescribed CO2 forcing
-    Anomaly.Forcing	= Time series of correction terms
-    BC			= Bias Correction for a stream to a given set of observations
+CLM_QIAN                = Run with the CLM Qian dataset valid from 1948 to 2004 (force CLM)
+CLM_QIAN_WISO   = Run with the CLM Qian dataset with isotopes valid from 2000 to 2004 (force CLM)
+CLMCRUNCEP              = Run with the CLM CRU NCEP V4 ( default ) forcing valid from 1900 to 2010 (force CLM)
+CLMCRUNCEPv7    = Run with the CLM CRU NCEP V7 forcing valid from 1900 to 2010 (force CLM)
+CLMGSWP3v1              = Run with the CLM GSWP3 V1 forcing (force CLM)
+CLMMOSARTTEST           = Run with the CLM NLDAS data (force CLM) for testing MOSART
+CLMNLDAS2               = Run with the CLM NLDAS2 regional forcing valid from 1980 to 2018 (force CLM)
+CLM1PT          = Run with supplied single point data (force CLM)
+CORE2_NYF               = CORE2 normal year forcing (for forcing POP and CICE)
+CORE2_IAF               = CORE2 intra-annual year forcing (for forcing POP and CICE)
+CORE_IAF_JRA    = JRA55 intra-annual year forcing (for forcing POP and CICE)
+IAF_JRA_1p5         = JRA55 intra-annual year forcing, v1.5, through 2020 (for forcing MPAS-Ocean and MPAS-Seaice)
+CORE_IAF_JRA_1p4_2018 = JRA55 intra-annual year forcing, v1.4, through 2018 (for forcing POP and CICE)
+CORE_RYF8485_JRA = JRA55 repeat year forcing, v1.3, 1984-1985 (for forcing POP and CICE)
+CORE_RYF9091_JRA = JRA55 repeat year forcing, v1.3, 1990-1991 (for forcing POP and CICE)
+CORE_RYF0304_JRA = JRA55 repeat year forcing, v1.3, 2003-2004 (for forcing POP and CICE)
+CPLHIST         = Streams for lnd or ocn/ice forcing used for spinup
+presaero                = Prescribed aerosol forcing
+topo            = Surface topography
+co2tseries              = Time series of prescribed CO2 forcing
+Anomaly.Forcing = Time series of correction terms
+BC                      = Bias Correction for a stream to a given set of observations
 
-    Anomaly.Forcing.Humidity
-    Anomaly.Forcing.Longwave
-    Anomaly.Forcing.Precip
-    Anomaly.Forcing.Pressure
-    Anomaly.Forcing.Shortwave
-    Anomaly.Forcing.Temperature
-    Anomaly.Forcing.Uwind
-    Anomaly.Forcing.Vwind
+Anomaly.Forcing.Humidity
+Anomaly.Forcing.Longwave
+Anomaly.Forcing.Precip
+Anomaly.Forcing.Pressure
+Anomaly.Forcing.Shortwave
+Anomaly.Forcing.Temperature
+Anomaly.Forcing.Uwind
+Anomaly.Forcing.Vwind
 
-    BC.CRUNCEP.CMAP.Precip
-    BC.CRUNCEP.GPCP.Precip
-    BC.QIAN.Precip
+BC.CRUNCEP.CMAP.Precip
+BC.CRUNCEP.GPCP.Precip
+BC.QIAN.Precip
 
-    CLM1PT.1x1_brazil
-    CLM1PT.1x1_camdenNJ
-    CLM1PT.1x1_asphaltjungleNJ
-    CLM1PT.1x1_mexicocityMEX
-    CLM1PT.1x1_vancouverCAN
-    CLM1PT.1x1_numaIA
-    CLM1PT.1x1_smallvilleIA
-    CLM1PT.5x5_amazon
-    CLM1PT.1x1_urbanc_alpha
-    CLM1PT.CLM_USRDAT
-    CLM1PT.ELM_USRDAT
+CLM1PT.1x1_brazil
+CLM1PT.1x1_camdenNJ
+CLM1PT.1x1_asphaltjungleNJ
+CLM1PT.1x1_mexicocityMEX
+CLM1PT.1x1_vancouverCAN
+CLM1PT.1x1_numaIA
+CLM1PT.1x1_smallvilleIA
+CLM1PT.5x5_amazon
+CLM1PT.1x1_urbanc_alpha
+CLM1PT.CLM_USRDAT
+CLM1PT.ELM_USRDAT
 
-    CPLHISTForcing.Solar
-    CPLHISTForcing.nonSolarFlux
-    CPLHISTForcing.State3hr
-    CPLHISTForcing.State1hr
+CPLHISTForcing.Solar
+CPLHISTForcing.nonSolarFlux
+CPLHISTForcing.State3hr
+CPLHISTForcing.State1hr
 
-    CLM_QIAN.Solar
-    CLM_QIAN.Precip
-    CLM_QIAN.TPQW
+CLM_QIAN.Solar
+CLM_QIAN.Precip
+CLM_QIAN.TPQW
 
-    CLM_QIAN_WISO.Solar
-    CLM_QIAN_WISO.Precip
-    CLM_QIAN_WISO.TPQW
+CLM_QIAN_WISO.Solar
+CLM_QIAN_WISO.Precip
+CLM_QIAN_WISO.TPQW
 
-    CLMCRUNCEP.Solar
-    CLMCRUNCEP.Precip
-    CLMCRUNCEP.TPQW
+CLMCRUNCEP.Solar
+CLMCRUNCEP.Precip
+CLMCRUNCEP.TPQW
 
-    CLMCRUNCEPv7.Solar
-    CLMCRUNCEPv7.Precip
-    CLMCRUNCEPv7.TPQW
+CLMCRUNCEPv7.Solar
+CLMCRUNCEPv7.Precip
+CLMCRUNCEPv7.TPQW
 
-    CLMGSWP3v1.Solar
-    CLMGSWP3v1.Precip
-    CLMGSWP3v1.TPQW
+CLMGSWP3v1.Solar
+CLMGSWP3v1.Precip
+CLMGSWP3v1.TPQW
 
-    CLMMOSARTTEST
+CLMMOSARTTEST
 
-    CLMNLDAS2.Solar
-    CLMNLDAS2.Precip
-    CLMNLDAS2.TPQW
+CLMNLDAS2.Solar
+CLMNLDAS2.Precip
+CLMNLDAS2.TPQW
 
-    co2tseries.20tr
-    co2tseries.20tr.latbnd
-    co2tseries.omip
-    co2tseries.SSP1-1.9
-    co2tseries.SSP1-2.6
-    co2tseries.SSP2-4.5
-    co2tseries.SSP3-7.0
-    co2tseries.SSP4-3.4
-    co2tseries.SSP4-6.0
-    co2tseries.SSP5-3.4
-    co2tseries.SSP5-8.5
-    co2tseries.SSP1-1.9.latbnd
-    co2tseries.SSP1-2.6.latbnd
-    co2tseries.SSP2-4.5.latbnd
-    co2tseries.SSP3-7.0.latbnd
-    co2tseries.SSP4-3.4.latbnd
-    co2tseries.SSP4-6.0.latbnd
-    co2tseries.SSP5-3.4.latbnd
-    co2tseries.SSP5-8.5.latbnd
+co2tseries.20tr
+co2tseries.20tr.latbnd
+co2tseries.omip
+co2tseries.SSP1-1.9
+co2tseries.SSP1-2.6
+co2tseries.SSP2-4.5
+co2tseries.SSP3-7.0
+co2tseries.SSP4-3.4
+co2tseries.SSP4-6.0
+co2tseries.SSP5-3.4
+co2tseries.SSP5-8.5
+co2tseries.SSP1-1.9.latbnd
+co2tseries.SSP1-2.6.latbnd
+co2tseries.SSP2-4.5.latbnd
+co2tseries.SSP3-7.0.latbnd
+co2tseries.SSP4-3.4.latbnd
+co2tseries.SSP4-6.0.latbnd
+co2tseries.SSP5-3.4.latbnd
+co2tseries.SSP5-8.5.latbnd
 
-    CORE2_NYF.GISS
-    CORE2_NYF.GXGXS
-    CORE2_NYF.NCEP
+CORE2_NYF.GISS
+CORE2_NYF.GXGXS
+CORE2_NYF.NCEP
 
-    Note for CORE2_IAF:
-    The most current versions of forcing files(those recommended for use) are duplicated
-    below and stored at /ccsm/ocn/iaf/):
-    gcgcs.prec.T62.current, giss.lwdn.T62.current, giss.swdn.T62.current, giss.swup.T62.current,
-    ncep.dn10.T62.current, ncep.q_10.T62.current ncep.slp_.T62.current,
-    ncep.t_10.T62.current, ncep.u_10.T62.current, ncep.v_10.T62.current
+Note for CORE2_IAF:
+The most current versions of forcing files(those recommended for use) are duplicated
+below and stored at /ccsm/ocn/iaf/):
+gcgcs.prec.T62.current, giss.lwdn.T62.current, giss.swdn.T62.current, giss.swup.T62.current,
+ncep.dn10.T62.current, ncep.q_10.T62.current ncep.slp_.T62.current,
+ncep.t_10.T62.current, ncep.u_10.T62.current, ncep.v_10.T62.current
 
-    CORE2_IAF.GCGCS.PREC
-    CORE2_IAF.GISS.LWDN
-    CORE2_IAF.GISS.SWDN
-    CORE2_IAF.GISS.SWUP
-    CORE2_IAF.NCEP.DN10
-    CORE2_IAF.NCEP.Q_10
-    CORE2_IAF.NCEP.SLP_
-    CORE2_IAF.NCEP.T_10
-    CORE2_IAF.NCEP.U_10
-    CORE2_IAF.NCEP.V_10
-    CORE2_IAF.CORE2.ArcFactor
+CORE2_IAF.GCGCS.PREC
+CORE2_IAF.GISS.LWDN
+CORE2_IAF.GISS.SWDN
+CORE2_IAF.GISS.SWUP
+CORE2_IAF.NCEP.DN10
+CORE2_IAF.NCEP.Q_10
+CORE2_IAF.NCEP.SLP_
+CORE2_IAF.NCEP.T_10
+CORE2_IAF.NCEP.U_10
+CORE2_IAF.NCEP.V_10
+CORE2_IAF.CORE2.ArcFactor
 
-    presaero.clim_1850
-    presaero.clim_2000
-    presaero.clim_2010
-    presaero.trans_1850-2000
-    presaero.SSP1-1.9
-    presaero.SSP1-2.6
-    presaero.SSP2-4.5
-    presaero.SSP3-7.0
-    presaero.SSP4-3.4
-    presaero.SSP4-6.0
-    presaero.SSP5-3.4
-    presaero.SSP5-8.5
-    presaero.cplhist
+presaero.clim_1850
+presaero.clim_2000
+presaero.clim_2010
+presaero.trans_1850-2000
+presaero.SSP1-1.9
+presaero.SSP1-2.6
+presaero.SSP2-4.5
+presaero.SSP3-7.0
+presaero.SSP4-3.4
+presaero.SSP4-6.0
+presaero.SSP5-3.4
+presaero.SSP5-8.5
+presaero.cplhist
 
-    topo.observed
-    topo.cplhist
+topo.observed
+topo.cplhist
 
-      **********IMPORTANT NOTE: *************
-      In the value matches below, regular expressions are used ****
-      If two matches are equivalent, the FIRST one will be used, so need to make sure
-      that matches are not equivalent if possible
+**********IMPORTANT NOTE: *************
+In the value matches below, regular expressions are used ****
+If two matches are equivalent, the FIRST one will be used, so need to make sure
+that matches are not equivalent if possible
 
-	 As an example, say datm_mode=CLMCRUNCEPv7,
+As an example, say datm_mode=CLMCRUNCEPv7,
 
-         the following order would result in an INCORRECT setting of streams for this datm_mode
-             <value datm_mode="CLMCRUNCEP">CLMCRUNCEP.Solar,CLMCRUNCEP.Precip,CLMCRUNCEP.TPQW</value>
-             <value datm_mode="CLMCRUNCEPv7">CLMCRUNCEPv7.Solar,CLMCRUNCEPv7.Precip,CLMCRUNCEPv7.TPQW</value>
+the following order would result in an INCORRECT setting of streams for this datm_mode
+<value datm_mode="CLMCRUNCEP">CLMCRUNCEP.Solar,CLMCRUNCEP.Precip,CLMCRUNCEP.TPQW</value>
+<value datm_mode="CLMCRUNCEPv7">CLMCRUNCEPv7.Solar,CLMCRUNCEPv7.Precip,CLMCRUNCEPv7.TPQW</value>
 
-         the following will results in the CORRECT set of streams for this datm_mode
-             <value datm_mode="CLMCRUNCEP.\">CLMCRUNCEP.Solar,CLMCRUNCEP.Precip,CLMCRUNCEP.TPQW</value>
-             <value datm_mode="CLMCRUNCEPv7">CLMCRUNCEPv7.Solar,CLMCRUNCEPv7.Precip,CLMCRUNCEPv7.TPQW</value>
+the following will results in the CORRECT set of streams for this datm_mode
+<value datm_mode="CLMCRUNCEP.\">CLMCRUNCEP.Solar,CLMCRUNCEP.Precip,CLMCRUNCEP.TPQW</value>
+<value datm_mode="CLMCRUNCEPv7">CLMCRUNCEPv7.Solar,CLMCRUNCEPv7.Precip,CLMCRUNCEPv7.TPQW</value>
   -->
 
   <!-- ========================================================================================  -->
@@ -1257,7 +1257,7 @@
       </value>
       <value  stream="CORE_IAF_JRA_1p4_2018.NCEP.SLP_">
         JRA.v1.3.slp.TL319.%y.190528.nc
-      </value> 
+      </value>
       <value  stream="CORE_IAF_JRA.NCEP.T_10">
         JRA.v1.3.t_10.TL319.%y.171019.nc
       </value>
@@ -1266,7 +1266,7 @@
       </value>
       <value  stream="CORE_IAF_JRA_1p4_2018.NCEP.T_10">
         JRA.v1.3.t_10.TL319.%y.190528.nc
-      </value> 
+      </value>
       <value  stream="CORE_IAF_JRA.NCEP.U_10">
         JRA.v1.3.u_10.TL319.%y.171019.nc
       </value>
@@ -1275,7 +1275,7 @@
       </value>
       <value  stream="CORE_IAF_JRA_1p4_2018.NCEP.U_10">
         JRA.v1.3.u_10.TL319.%y.190528.nc
-      </value> 
+      </value>
       <value  stream="CORE_IAF_JRA.NCEP.V_10">
         JRA.v1.3.v_10.TL319.%y.171019.nc
       </value>
@@ -1284,7 +1284,7 @@
       </value>
       <value  stream="CORE_IAF_JRA_1p4_2018.NCEP.V_10">
         JRA.v1.3.v_10.TL319.%y.190528.nc
-      </value> 
+      </value>
       <value stream="CORE_RYF8485_JRA.GISS.LWDN">RAF_8485.JRA.v1.3.radiation.lwdn.TL319.180404.nc</value>
       <value stream="CORE_RYF8485_JRA.GISS.SWDN">RAF_8485.JRA.v1.3.radiation.swdn.TL319.180404.nc</value>
       <value stream="CORE_RYF8485_JRA.GCGCS">RAF_8485.JRA.v1.3.prec.TL319.180404.nc</value>
@@ -1455,8 +1455,8 @@
         a2x3h_Sa_pbot    pbot
         a2x3h_Sa_dens    dens
         a2x3h_Sa_pslv    pslv
-	a2x3h_Sa_co2diag co2diag
-	a2x3h_Sa_co2prog co2prog
+        a2x3h_Sa_co2diag co2diag
+        a2x3h_Sa_co2prog co2prog
       </value>
       <value stream="CPLHISTForcing.State1hr">
         a2x1h_Sa_u  u
@@ -1628,7 +1628,7 @@
         prec  prec
       </value>
       <value  stream="CORE_IAF_JRA.*.GISS.LWDN">
-        lwdn  lwdn 
+        lwdn  lwdn
       </value>
       <value  stream="CORE_IAF_JRA.*.GISS.SWDN">
         swdn  swdn
@@ -1894,7 +1894,7 @@
       <value stream="topo.cplhist">$DATM_CPLHIST_YR_START</value>
       <value stream="CFSv2.UV">1</value>
       <value stream="CFSR.UV">1</value>
-    </values									>
+    </values                                                                    >
   </entry>
 
   <entry id="strm_year_end">

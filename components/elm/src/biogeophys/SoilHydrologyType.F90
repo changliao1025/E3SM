@@ -10,9 +10,9 @@ Module SoilHydrologyType
   use elm_varcon            , only : zsoi, dzsoi, zisoi, spval
   use elm_varctl            , only : iulog, use_lnd_rof_two_way
   use SharedParamsMod     , only : ParamsShareInst
-  use LandunitType          , only : lun_pp                
-  use ColumnType            , only : col_pp      
-  use GridcellType          , only : grc_pp   
+  use LandunitType          , only : lun_pp
+  use ColumnType            , only : col_pp
+  use GridcellType          , only : grc_pp
   use topounit_varcon       , only : max_topounits
   !
   ! !PUBLIC TYPES:
@@ -29,6 +29,20 @@ Module SoilHydrologyType
 
      integer , pointer :: h2osfcflag => null()    ! true => surface water is active (namelist)
      integer , pointer :: origflag   => null()    ! used to control soil hydrology properties (namelist)
+
+
+     !50==================================================
+     ! Author: Chang Liao( changliao at pnnl.gov )
+     ! Module: H2SC (hillslope based soil column drainage function)
+     ! rof->lnd exchange
+     ! First edit: 20211029
+     !50==================================================
+     real(r8):: dDelta_h !the height difference
+     real(r8):: dDistance
+     real(r8):: dElevation
+     real(r8):: dFactor_seepage
+     real(r8):: dDrainage !the total drainage from the soil?
+     real(r8):: dThickness_critical_zone
 
      ! NON-VIC
      real(r8), pointer :: frost_table_col   (:)    => null() ! col frost table depth
@@ -66,6 +80,33 @@ Module SoilHydrologyType
      real(r8), pointer :: i_0_col           (:)     => null()! col VIC average saturation in top soil layers
      real(r8), pointer :: ice_col           (:,:)   => null()! col VIC soil ice (kg/m2) for VIC soil layers
 
+
+     !h2sc parameter
+     real(r8), pointer :: ksat_anisotropy    (:)   ! col anisotropy parameter
+     real(r8), pointer :: fover    (:)   ! fover for surface runoff parameter
+
+     real(r8), pointer :: rdep    (:)   ! fover for surface runoff parameter
+     real(r8), pointer :: gxr    (:)   ! fover for surface runoff parameter
+     real(r8), pointer :: hslp    (:)   ! fover for surface runoff parameter
+
+     real(r8), pointer :: elev0    (:)   ! mosart based elevation profile
+     real(r8), pointer :: elev1    (:)   ! mosart based elevation profile
+     real(r8), pointer :: elev2    (:)   ! mosart based elevation profile
+     real(r8), pointer :: elev3    (:)   ! mosart based elevation profile
+     real(r8), pointer :: elev4    (:)   ! mosart based elevation profile
+     real(r8), pointer :: elev5    (:)   ! mosart based elevation profile
+     real(r8), pointer :: elev6    (:)   ! mosart based elevation profile
+     real(r8), pointer :: elev7    (:)   ! mosart based elevation profile
+     real(r8), pointer :: elev8    (:)   ! mosart based elevation profile
+     real(r8), pointer :: elev9    (:)   ! mosart based elevation profile
+     real(r8), pointer :: elev10    (:)   ! mosart based elevation profile
+
+     !real(r8), pointer :: elev_mean    (:)   ! mosart based elevation profile
+
+     real(r8), pointer :: rlen    (:)   ! mosart based elevation profile
+     real(r8), pointer :: hlen    (:)   ! hillslope length
+
+     real(r8), pointer :: ksat    (:)   ! ksat from data
    contains
 
      procedure, public  :: Init
@@ -155,6 +196,32 @@ contains
     allocate(this%i_0_col           (begc:endc))                 ; this%i_0_col           (:)     = spval
     allocate(this%ice_col           (begc:endc,nlayert))         ; this%ice_col           (:,:)   = spval
 
+
+    !h2sc parameter
+    allocate(this%ksat_anisotropy    (begg:endg))         ; this%ksat_anisotropy           (:)   = spval
+
+    allocate(this%ksat    (begg:endg))         ; this%ksat          (:)   = spval
+    allocate(this%fover    (begg:endg))         ; this%fover           (:)   = spval
+
+    allocate(this%rdep    (begg:endg))         ; this%rdep           (:)   = spval
+    allocate(this%gxr    (begg:endg))         ; this%gxr           (:)   = spval
+    allocate(this%hslp    (begg:endg))         ; this%hslp           (:)   = spval
+
+    allocate(this%elev0    (begg:endg))         ; this%elev0           (:)   = spval
+    allocate(this%elev1    (begg:endg))         ; this%elev1           (:)   = spval
+    allocate(this%elev2    (begg:endg))         ; this%elev2           (:)   = spval
+    allocate(this%elev3    (begg:endg))         ; this%elev3           (:)   = spval
+    allocate(this%elev4    (begg:endg))         ; this%elev4           (:)   = spval
+    allocate(this%elev5    (begg:endg))         ; this%elev5           (:)   = spval
+    allocate(this%elev6    (begg:endg))         ; this%elev6           (:)   = spval
+    allocate(this%elev7    (begg:endg))         ; this%elev7           (:)   = spval
+    allocate(this%elev8    (begg:endg))         ; this%elev8           (:)   = spval
+    allocate(this%elev9    (begg:endg))         ; this%elev9           (:)   = spval
+    allocate(this%elev10    (begg:endg))        ; this%elev10           (:)   = spval
+    !allocate(this%elev_mean    (begg:endg))        ; this%elev_mean           (:)   = spval
+
+    allocate(this%rlen    (begg:endg))        ; this%rlen           (:)   = spval
+    allocate(this%hlen    (begg:endg))        ; this%hlen           (:)   = spval
   end subroutine InitAllocate
 
   !------------------------------------------------------------------------
@@ -228,7 +295,7 @@ contains
     use shr_log_mod     , only : errMsg => shr_log_errMsg
     use shr_spfn_mod    , only : shr_spfn_erf
     use shr_kind_mod    , only : r8 => shr_kind_r8
-    use elm_varctl      , only : fsurdat, iulog, use_vichydro, use_var_soil_thick
+    use elm_varctl      , only : fsurdat, iulog, use_vichydro, use_var_soil_thick, use_h2sc
     use elm_varpar      , only : nlevsoi, nlevgrnd, nlevsno, nlevlak, nlevurb
     use elm_varcon      , only : denice, denh2o, sb, bdsno
     use elm_varcon      , only : h2osno_max, zlnd, tfrz, spval, pc
@@ -239,13 +306,17 @@ contains
     use fileutils       , only : getfil
     use organicFileMod  , only : organicrd
     use ncdio_pio       , only : file_desc_t, ncd_io, ncd_pio_openfile, ncd_pio_closefile
+
+    use h2sc_drainage    , only : cHillslope  !h2sc
+    use domainMod        , only : ldomain
+
     !
     ! !ARGUMENTS:
     class(soilhydrology_type) :: this
     type(bounds_type) , intent(in)    :: bounds
     !
     ! !LOCAL VARIABLES:
-    integer            :: p,c,j,l,g,lev,nlevs, t,ti,topi
+    integer            :: p,c,i, j,l,g,lev,nlevs, t,ti,topi !h2sc
     integer            :: nlevbed
     integer            :: ivic,ivicstrt,ivicend
     real(r8)           :: maxslope, slopemax, minslope
@@ -256,22 +327,27 @@ contains
     character(len=256) :: locfn
     real(r8)           :: clay,sand        ! temporaries
     real(r8)           :: om_frac          ! organic matter fraction
-    real(r8)           :: organic_max      ! organic matter (kg/m3) where soil is assumed to act like peat 
-    real(r8) ,pointer  :: b2d        (:,:)   ! read in - VIC b  
-    real(r8) ,pointer  :: ds2d       (:,:)   ! read in - VIC Ds 
-    real(r8) ,pointer  :: dsmax2d    (:,:)   ! read in - VIC Dsmax 
-    real(r8) ,pointer  :: ws2d       (:,:)   ! read in - VIC Ws 
+    real(r8)           :: organic_max      ! organic matter (kg/m3) where soil is assumed to act like peat
+    real(r8) ,pointer  :: b2d        (:,:)   ! read in - VIC b
+    real(r8) ,pointer  :: ds2d       (:,:)   ! read in - VIC Ds
+    real(r8) ,pointer  :: dsmax2d    (:,:)   ! read in - VIC Dsmax
+    real(r8) ,pointer  :: ws2d       (:,:)   ! read in - VIC Ws
     real(r8), pointer  :: sandcol    (:,:) ! column level sand fraction for calculating VIC parameters
     real(r8), pointer  :: claycol    (:,:) ! column level clay fraction for calculating VIC parameters
     real(r8), pointer  :: om_fraccol (:,:) ! column level organic matter fraction for calculating VIC parameters
-    real(r8) ,pointer  :: sand3d     (:,:,:) ! read in - soil texture: percent sand 
-    real(r8) ,pointer  :: clay3d     (:,:,:) ! read in - soil texture: percent clay 
-    real(r8) ,pointer  :: organic3d  (:,:,:) ! read in - organic matter: kg/m3 
-    real(r8) ,pointer  :: zisoifl    (:)   ! original soil interface depth 
-    real(r8) ,pointer  :: zsoifl     (:)   ! original soil midpoint 
-    real(r8) ,pointer  :: dzsoifl    (:)   ! original soil thickness 
+    real(r8) ,pointer  :: sand3d     (:,:,:) ! read in - soil texture: percent sand
+    real(r8) ,pointer  :: clay3d     (:,:,:) ! read in - soil texture: percent clay
+    real(r8) ,pointer  :: organic3d  (:,:,:) ! read in - organic matter: kg/m3
+    real(r8) ,pointer  :: zisoifl    (:)   ! original soil interface depth
+    real(r8) ,pointer  :: zsoifl     (:)   ! original soil midpoint
+    real(r8) ,pointer  :: dzsoifl    (:)   ! original soil thickness
     real(r8) ,pointer  :: fdrain     (:)   ! top-model drainage parameter
     !-----------------------------------------------------------------------
+
+    real(r8) :: dElevation_elm
+
+    real(r8)  :: dArea, drlenTotal,hlen_max , dResolution_grid, dDummy  !h2sc
+    real(r8) :: dThickness_critical_zone
 
     ! -----------------------------------------------------------------
     ! Initialize frost table
@@ -385,7 +461,7 @@ contains
           t = col_pp%topounit(c)
           topi = grc_pp%topi(g)
           ti = t - topi + 1
-          
+
           this%b_infil_col(c) = b2d(g,ti)
           this%ds_col(c)      = ds2d(g,ti)
           this%dsmax_col(c)   = dsmax2d(g,ti)
@@ -461,20 +537,20 @@ contains
                 ! do nothing
              else if (lun_pp%urbpoi(l) .and. (col_pp%itype(c) /= icol_road_perv) .and. (col_pp%itype(c) /= icol_road_imperv) )then
                 ! do nothing
-             else			    
-                  do lev = 1,nlevgrnd
-                    if ( more_vertlayers )then
+             else
+                do lev = 1,nlevgrnd
+                   if ( more_vertlayers )then
                       ! duplicate clay and sand values from last soil layer
                       if (lev .eq. 1) then
                          clay    = clay3d(g,ti,1)
                          sand    = sand3d(g,ti,1)
-                         om_frac = organic3d(g,ti,1)/organic_max 
+                         om_frac = organic3d(g,ti,1)/organic_max
                       else if (lev <= nlevsoi) then
                          do j = 1,nlevsoifl-1
                             if (zisoi(lev) >= zisoifl(j) .AND. zisoi(lev) < zisoifl(j+1)) then
                                clay    = clay3d(g,ti,j+1)
                                sand    = sand3d(g,ti,j+1)
-                               om_frac = organic3d(g,ti,j+1)/organic_max    
+                               om_frac = organic3d(g,ti,j+1)/organic_max
                             endif
                          end do
                       else
@@ -527,12 +603,198 @@ contains
 
        end do ! end of loop over columns
 
-      deallocate(b2d, ds2d, dsmax2d, ws2d)
-      deallocate(sandcol, claycol, om_fraccol)
-      deallocate(sand3d, clay3d, organic3d)
-      deallocate(zisoifl, zsoifl, dzsoifl)
+       deallocate(b2d, ds2d, dsmax2d, ws2d)
+       deallocate(sandcol, claycol, om_fraccol)
+       deallocate(sand3d, clay3d, organic3d)
+       deallocate(zisoifl, zsoifl, dzsoifl)
 
     end if ! end of if use_vichydro
+
+    if(use_h2sc) then
+       call getfil (fsurdat, locfn, 0)
+       call ncd_pio_openfile (ncid, locfn, 0)
+       call ncd_io(ncid=ncid, varname='anisotropy', flag='read', data=this%ksat_anisotropy, dim1name=grlnd, readvar=readvar)
+       if (.not. readvar) then
+          this%ksat_anisotropy(:) = 1.0
+       end if
+
+       call ncd_io(ncid=ncid, varname='fover', flag='read', data=this%fover, dim1name=grlnd, readvar=readvar)
+       if (.not. readvar) then
+          this%fover(:) = 0.5
+       end if
+       !mosart info
+       call ncd_io(ncid=ncid, varname='rdep', flag='read', data=this%rdep, dim1name=grlnd, readvar=readvar)
+       if (.not. readvar) then
+          this%rdep(:) = 0.0
+       end if
+       call ncd_io(ncid=ncid, varname='gxr', flag='read', data=this%gxr, dim1name=grlnd, readvar=readvar)
+       if (.not. readvar) then
+          this%gxr(:) = 0.0
+       end if
+
+       call ncd_io(ncid=ncid, varname='ksat', flag='read', data=this%ksat, dim1name=grlnd, readvar=readvar)
+       if (.not. readvar) then
+          this%ksat(:) = 0.001
+       end if
+
+       call ncd_io(ncid=ncid, varname='hslp', flag='read', data=this%hslp, dim1name=grlnd, readvar=readvar)
+       if (.not. readvar) then
+          this%hslp(:) = 0.0
+       end if
+       call ncd_io(ncid=ncid, varname='ele0', flag='read', data=this%elev0, dim1name=grlnd, readvar=readvar)
+       if (.not. readvar) then
+          this%elev0(:) = 0.
+       end if
+       call ncd_io(ncid=ncid, varname='ele1', flag='read', data=this%elev1, dim1name=grlnd, readvar=readvar)
+       if (.not. readvar) then
+          this%elev1(:) = 0.
+       end if
+       call ncd_io(ncid=ncid, varname='ele2', flag='read', data=this%elev2, dim1name=grlnd, readvar=readvar)
+       if (.not. readvar) then
+          this%elev2(:) = 0.
+       end if
+       call ncd_io(ncid=ncid, varname='ele3', flag='read', data=this%elev3, dim1name=grlnd, readvar=readvar)
+       if (.not. readvar) then
+          this%elev3(:) = 0.
+       end if
+       call ncd_io(ncid=ncid, varname='ele4', flag='read', data=this%elev4, dim1name=grlnd, readvar=readvar)
+       if (.not. readvar) then
+          this%elev4(:) = 0.
+       end if
+       call ncd_io(ncid=ncid, varname='ele5', flag='read', data=this%elev5, dim1name=grlnd, readvar=readvar)
+       if (.not. readvar) then
+          this%elev5(:) = 0.
+       end if
+       call ncd_io(ncid=ncid, varname='ele6', flag='read', data=this%elev6, dim1name=grlnd, readvar=readvar)
+       if (.not. readvar) then
+          this%elev6(:) = 0.
+       end if
+       call ncd_io(ncid=ncid, varname='ele7', flag='read', data=this%elev7, dim1name=grlnd, readvar=readvar)
+       if (.not. readvar) then
+          this%elev7(:) = 0.
+       end if
+       call ncd_io(ncid=ncid, varname='ele8', flag='read', data=this%elev8, dim1name=grlnd, readvar=readvar)
+       if (.not. readvar) then
+          this%elev8(:) = 0.
+       end if
+       call ncd_io(ncid=ncid, varname='ele9', flag='read', data=this%elev9, dim1name=grlnd, readvar=readvar)
+       if (.not. readvar) then
+          this%elev9(:) = 0.
+       end if
+       call ncd_io(ncid=ncid, varname='ele10', flag='read', data=this%elev10, dim1name=grlnd, readvar=readvar)
+       if (.not. readvar) then
+          this%elev10(:) = 0.0
+       end if
+
+       !call ncd_io(ncid=ncid, varname='TOPO', flag='read', data=this%elev_mean, dim1name=grlnd, readvar=readvar)
+       !if (.not. readvar) then
+       !   this%elev_mean(:) = 0.0
+       !end if
+
+       call ncd_io(ncid=ncid, varname='rlen', flag='read', data=this%rlen, dim1name=grlnd, readvar=readvar)
+       if (.not. readvar) then
+          this%rlen(:) = 0.0
+       end if
+
+       call ncd_pio_closefile(ncid)
+
+       !calculation of other parameters
+       !the model need the hillslope slope, which can be calculated from the above parameters
+       do g = bounds%begg, bounds%endg
+          !mosart method
+          !TUnit%hlen(iunit) = TUnit%area(iunit) / TUnit%rlenTotal(iunit) / 2._r8
+          !  hlen_max = max(1000.0_r8, sqrt(TUnit%area(iunit))) ! constrain the hillslope length
+          !  if(TUnit%hlen(iunit) > hlen_max) then
+          !     TUnit%hlen(iunit) = hlen_max   ! allievate the outlier in drainage density estimation. TO DO
+          !  end if
+          !dArea = grc_pp%area(g)
+          dArea = grc_pp%area(g) * 1000.0 * 1000.0 !unit is km, convert to m
+
+          dElevation_elm = ldomain%topo(g)
+          drlenTotal = dArea * this%gxr(g) !unit m
+          if(this%rlen(g) > drlenTotal) then
+             drlenTotal = this%rlen(g)
+          end if
+          this%hlen(g) = dArea / drlenTotal
+          hlen_max = max(1250.0_r8, sqrt(dArea) )
+          if (this%hlen(g) > hlen_max) then
+             this%hlen(g) = hlen_max
+          end if
+
+          cHillslope(g)%aElevation_profile = (/ this%elev0(g), &
+               this%elev1(g), &
+               this%elev2(g), &
+               this%elev3(g), &
+               this%elev4(g), &
+               this%elev5(g), &
+               this%elev6(g), &
+               this%elev7(g), &
+               this%elev8(g), &
+               this%elev9(g), &
+               this%elev10(g) /)
+          if ( this%elev0(g)  .ne.  this%elev10(g) ) then
+
+             dThickness_critical_zone = 0.0
+             do i=1, nlevgrnd
+                dThickness_critical_zone = dThickness_critical_zone + dzsoi(i)
+             end do
+             cHillslope(g)%dThickness_critical_zone = dThickness_critical_zone  !* 1.5
+             cHillslope(g)%iFlag_hillslope = 1
+
+             cHillslope(g)%dLength_hillslope = this%hlen(g)
+             if (cHillslope(g)%dLength_hillslope < 1250) then
+                cHillslope(g)%dLength_hillslope = 1250.0
+             end if
+
+             this%hslp(g) = ( this%elev10(g)  - this%elev0(g)  )/ cHillslope(g)%dLength_hillslope
+
+             if (this%hslp(g) > 0.8 ) then
+                this%hslp(g) = 0.8
+             endif
+
+             if (  (this%elev0(g)+this%hslp(g)*cHillslope(g)%dLength_hillslope)  < dElevation_elm  ) then
+                dDummy = this%hslp(g)
+                this%hslp(g) =  (dElevation_elm-this%elev0(g)) / cHillslope(g)%dLength_hillslope
+                !write(iulog,*) 'H2SC hillslope issue', this%elev0(g),dElevation_elm,dDummy, this%hslp(g)
+             endif
+
+             cHillslope(g)%dSlope_surface = this%hslp(g) * 1.0
+
+             !cHillslope(g)%dSlope_surface = this%hslp(g) * 10.0  !h2sc test 10 times surface slope
+             if (cHillslope(g)%dSlope_surface > 0.8 ) then
+                cHillslope(g)%dSlope_surface = 0.8
+             endif
+
+             cHillslope(g)%dElevation_max = cHillslope(g)%dElevation_min +  cHillslope(g)%dSlope_surface * cHillslope(g)%dLength_hillslope
+
+             if ( this%rdep(g) > 0.0 ) then
+                cHillslope(g)%dChannel_depth = this%rdep(g)
+             else
+                cHillslope(g)%dChannel_depth = 5.0
+             end if
+
+             dResolution_grid = sqrt(dArea)
+
+             cHillslope(g)%dArea_hillslope = dArea / 2.0
+             cHillslope(g)%dWidth_hillslope = (cHillslope(g)%dArea_hillslope) / this%hlen(g)
+
+             if( cHillslope(g)%dWidth_hillslope > dResolution_grid ) then
+                cHillslope(g)%dWidth_hillslope = dResolution_grid
+
+             endif
+             call cHillslope(g)%initialize_hillslope_class()
+             dDummy = cHillslope(g)%calculate_bedrock_slope()
+          else
+             write(iulog,*) 'H2SC hillslope issue', this%elev0(g), this%elev10(g)
+
+             cHillslope(g)%iFlag_hillslope = 0
+          end if
+
+
+       end do
+
+    end if
+
 
     allocate(fdrain(bounds%begg:bounds%endg))
     call getfil (fsurdat, locfn, 0)
@@ -754,156 +1016,156 @@ contains
 
   end subroutine initSoilParVIC
 
-   !-----------------------------------------------------------------------
-   subroutine initELMVICMap(c, soilhydrology_vars)
-     !
-     ! !DESCRIPTION:
-     ! This subroutine calculates mapping between elm and VIC layers
-     ! added by AWang, modified by M.Huang for elm4
-     ! NOTE: in elm h2osoil_liq unit is kg/m2, in VIC moist is mm
-     ! h2osoi_ice is actually water equavlent ice content.
-     !
-     ! !USES:
-     use elm_varcon  , only : denh2o, denice
-     use elm_varpar  , only : nlevsoi, nlayer, nlayert, nlevgrnd
-     !
-     ! !ARGUMENTS:
-     integer , intent(in)  :: c
-     type(soilhydrology_type), intent(inout) :: soilhydrology_vars
-     !
-     ! !REVISION HISTORY:
-     ! Created by Maoyi Huang
-     ! 11/13/2012, Maoyi Huang: rewrite the mapping modules in elm4VIC
-     !
-     ! !LOCAL VARIABLES
-     real(r8) :: sum_frac(1:nlayer)                  ! sum of fraction for each layer
-     real(r8) :: deltal(1:nlayer+1)                  ! temporary
-     real(r8) :: zsum                                ! temporary
-     real(r8) :: lsum                                ! temporary
-     real(r8) :: temp                                ! temporary
-     integer :: i, j, fc
-     !-----------------------------------------------------------------------
+  !-----------------------------------------------------------------------
+  subroutine initELMVICMap(c, soilhydrology_vars)
+    !
+    ! !DESCRIPTION:
+    ! This subroutine calculates mapping between elm and VIC layers
+    ! added by AWang, modified by M.Huang for elm4
+    ! NOTE: in elm h2osoil_liq unit is kg/m2, in VIC moist is mm
+    ! h2osoi_ice is actually water equavlent ice content.
+    !
+    ! !USES:
+    use elm_varcon  , only : denh2o, denice
+    use elm_varpar  , only : nlevsoi, nlayer, nlayert, nlevgrnd
+    !
+    ! !ARGUMENTS:
+    integer , intent(in)  :: c
+    type(soilhydrology_type), intent(inout) :: soilhydrology_vars
+    !
+    ! !REVISION HISTORY:
+    ! Created by Maoyi Huang
+    ! 11/13/2012, Maoyi Huang: rewrite the mapping modules in elm4VIC
+    !
+    ! !LOCAL VARIABLES
+    real(r8) :: sum_frac(1:nlayer)                  ! sum of fraction for each layer
+    real(r8) :: deltal(1:nlayer+1)                  ! temporary
+    real(r8) :: zsum                                ! temporary
+    real(r8) :: lsum                                ! temporary
+    real(r8) :: temp                                ! temporary
+    integer :: i, j, fc
+    !-----------------------------------------------------------------------
 
-     associate(                                                    &
-          dz            =>    col_pp%dz    ,                          & ! Input:  [real(r8) (:,:)   ]  layer depth (m)
-          zi            =>    col_pp%zi    ,                          & ! Input:  [real(r8) (:,:)   ]  interface level below a "z" level (m)
-          z             =>    col_pp%z     ,                          & ! Input:  [real(r8) (:,:)   ]  layer thickness (m)
+    associate(                                                    &
+         dz            =>    col_pp%dz    ,                          & ! Input:  [real(r8) (:,:)   ]  layer depth (m)
+         zi            =>    col_pp%zi    ,                          & ! Input:  [real(r8) (:,:)   ]  interface level below a "z" level (m)
+         z             =>    col_pp%z     ,                          & ! Input:  [real(r8) (:,:)   ]  layer thickness (m)
+         
+         depth         =>    soilhydrology_vars%depth_col ,       & ! Input:  [real(r8) (:,:)   ]  layer depth of VIC (m)
+         vic_elm_fract =>    soilhydrology_vars%vic_elm_fract_col & ! Output: [real(r8) (:,:,:) ]  fraction of VIC layers in elm layers
+         )
 
-          depth         =>    soilhydrology_vars%depth_col ,       & ! Input:  [real(r8) (:,:)   ]  layer depth of VIC (m)
-          vic_elm_fract =>    soilhydrology_vars%vic_elm_fract_col & ! Output: [real(r8) (:,:,:) ]  fraction of VIC layers in elm layers
-          )
+      !  set fraction of VIC layer in each elm layer
 
-       !  set fraction of VIC layer in each elm layer
+      lsum = 0._r8
+      do i = 1, nlayer
+         deltal(i) = depth(c,i)
+      end do
+      do i = 1, nlayer
+         zsum = 0._r8
+         sum_frac(i) = 0._r8
+         do j = 1, nlevsoi
+            if( (zsum < lsum) .and. (zsum + dz(c,j) >= lsum ))  then
+               call linear_interp(lsum, temp, zsum, zsum + dz(c,j), 0._r8, 1._r8)
+               vic_elm_fract(c,i,j) = 1._r8 - temp
+               if(lsum + deltal(i) < zsum + dz(c,j)) then
+                  call linear_interp(lsum + deltal(i), temp, zsum, zsum + dz(c,j), 1._r8, 0._r8)
+                  vic_elm_fract(c,i,j) = vic_elm_fract(c,i,j) - temp
+               end if
+            else if( (zsum < lsum + deltal(i)) .and. (zsum + dz(c,j) >= lsum + deltal(i)) ) then
+               call linear_interp(lsum + deltal(i), temp, zsum, zsum + dz(c,j), 0._r8, 1._r8)
+               vic_elm_fract(c,i,j) = temp
+               if(zsum<=lsum) then
+                  call linear_interp(lsum, temp, zsum, zsum + dz(c,j), 0._r8, 1._r8)
+                  vic_elm_fract(c,i,j) = vic_elm_fract(c,i,j) - temp
+               end if
+            else if( (zsum >= lsum .and. zsum + dz(c,j) <= lsum + deltal(i)) )  then
+               vic_elm_fract(c,i,j) = 1._r8
+            else
+               vic_elm_fract(c,i,j) = 0._r8
+            end if
+            zsum = zsum + dz(c,j)
+            sum_frac(i) = sum_frac(i) + vic_elm_fract(c,i,j)
+         end do                           ! end elm layer calculation
+         lsum = lsum + deltal(i)
+      end do                             ! end VIC layer calcultion
 
-       lsum = 0._r8
-       do i = 1, nlayer
-          deltal(i) = depth(c,i)
-       end do
-       do i = 1, nlayer
-          zsum = 0._r8
-          sum_frac(i) = 0._r8
-          do j = 1, nlevsoi
-             if( (zsum < lsum) .and. (zsum + dz(c,j) >= lsum ))  then
-                call linear_interp(lsum, temp, zsum, zsum + dz(c,j), 0._r8, 1._r8)
-                vic_elm_fract(c,i,j) = 1._r8 - temp
-                if(lsum + deltal(i) < zsum + dz(c,j)) then
-                   call linear_interp(lsum + deltal(i), temp, zsum, zsum + dz(c,j), 1._r8, 0._r8)
-                   vic_elm_fract(c,i,j) = vic_elm_fract(c,i,j) - temp
-                end if
-             else if( (zsum < lsum + deltal(i)) .and. (zsum + dz(c,j) >= lsum + deltal(i)) ) then
-                call linear_interp(lsum + deltal(i), temp, zsum, zsum + dz(c,j), 0._r8, 1._r8)
-                vic_elm_fract(c,i,j) = temp
-                if(zsum<=lsum) then
-                   call linear_interp(lsum, temp, zsum, zsum + dz(c,j), 0._r8, 1._r8)
-                   vic_elm_fract(c,i,j) = vic_elm_fract(c,i,j) - temp
-                end if
-             else if( (zsum >= lsum .and. zsum + dz(c,j) <= lsum + deltal(i)) )  then
-                vic_elm_fract(c,i,j) = 1._r8
-             else
-                vic_elm_fract(c,i,j) = 0._r8
-             end if
-             zsum = zsum + dz(c,j)
-             sum_frac(i) = sum_frac(i) + vic_elm_fract(c,i,j)
-          end do                           ! end elm layer calculation
-          lsum = lsum + deltal(i)
-       end do                             ! end VIC layer calcultion
+    end associate
 
-     end associate
+  end subroutine initelmVICMap
 
-   end subroutine initelmVICMap
+  !-------------------------------------------------------------------
+  subroutine linear_interp(x,y, x0, x1, y0, y1)
+    !
+    ! !DESCRIPTION:
+    ! This subroutine provides linear interpolation
+    !
+    ! !ARGUMENTS:
+    implicit none
+    real(r8), intent(in)  :: x, x0, y0, x1, y1
+    real(r8), intent(out) :: y
+    !-------------------------------------------------------------------
 
-   !-------------------------------------------------------------------
-   subroutine linear_interp(x,y, x0, x1, y0, y1)
-     !
-     ! !DESCRIPTION:
-     ! This subroutine provides linear interpolation
-     !
-     ! !ARGUMENTS:
-     implicit none
-     real(r8), intent(in)  :: x, x0, y0, x1, y1
-     real(r8), intent(out) :: y
-     !-------------------------------------------------------------------
+    y = y0 + (x - x0) * (y1 - y0) / (x1 - x0)
 
-     y = y0 + (x - x0) * (y1 - y0) / (x1 - x0)
+  end subroutine linear_interp
 
-   end subroutine linear_interp
+  !-----------------------------------------------------------------------
+  subroutine ReadNL( this, NLFilename )
+    !
+    ! !DESCRIPTION:
+    ! Read namelist for SoilHydrology
+    !
+    ! !USES:
+    use shr_mpi_mod          , only : shr_mpi_bcast
+    use fileutils            , only : getavu, relavu, opnfil
+    use elm_nlUtilsMod       , only : find_nlgroup_name
+    !
+    ! !ARGUMENTS:
+    class(soilhydrology_type) :: this
+    character(len=*), intent(IN) :: NLFilename ! Namelist filename
+    !
+    ! !LOCAL VARIABLES:
+    integer :: ierr                 ! error code
+    integer :: unitn                ! unit for namelist file
+    integer :: origflag=0            !use to control soil hydraulic properties
+    integer :: h2osfcflag=1          !If surface water is active or not
+    character(len=32) :: subname = 'SoilHydrology_readnl'  ! subroutine name
+    !-----------------------------------------------------------------------
 
-   !-----------------------------------------------------------------------
-   subroutine ReadNL( this, NLFilename )
-     !
-     ! !DESCRIPTION:
-     ! Read namelist for SoilHydrology
-     !
-     ! !USES:
-     use shr_mpi_mod          , only : shr_mpi_bcast
-     use fileutils            , only : getavu, relavu, opnfil
-     use elm_nlUtilsMod       , only : find_nlgroup_name
-     !
-     ! !ARGUMENTS:
-     class(soilhydrology_type) :: this
-     character(len=*), intent(IN) :: NLFilename ! Namelist filename
-     !
-     ! !LOCAL VARIABLES:
-     integer :: ierr                 ! error code
-     integer :: unitn                ! unit for namelist file
-     integer :: origflag=0            !use to control soil hydraulic properties
-     integer :: h2osfcflag=1          !If surface water is active or not
-     character(len=32) :: subname = 'SoilHydrology_readnl'  ! subroutine name
-     !-----------------------------------------------------------------------
-
-     namelist / elm_soilhydrology_inparm / h2osfcflag, origflag
-
-
-     ! preset values
-     origflag = 0
-     h2osfcflag = 1
-
-     if ( masterproc )then
-
-        unitn = getavu()
-        write(iulog,*) 'Read in elm_soilhydrology_inparm  namelist'
-        call opnfil (NLFilename, unitn, 'F')
-        call find_nlgroup_name(unitn, 'elm_soilhydrology_inparm', status=ierr)
-        if (ierr == 0) then
-           read(unitn, elm_soilhydrology_inparm, iostat=ierr)
-           if (ierr /= 0) then
-              call endrun(msg="ERROR reading elm_soilhydrology_inparm namelist"//errmsg(__FILE__, __LINE__))
-           end if
-        end if
-        call relavu( unitn )
-
-     end if
-
-     call shr_mpi_bcast(h2osfcflag, mpicom)
-     call shr_mpi_bcast(origflag,   mpicom)
-     !! needed To avoid incorrect deepcopy to the GPU
-     allocate(this%h2osfcflag)
-     allocate(this%origflag  )
+    namelist / elm_soilhydrology_inparm / h2osfcflag, origflag
 
 
-     this%h2osfcflag = h2osfcflag
-     this%origflag   = origflag
+    ! preset values
+    origflag = 0
+    h2osfcflag = 1
 
-   end subroutine ReadNL
+    if ( masterproc )then
 
- end Module SoilHydrologyType
+       unitn = getavu()
+       write(iulog,*) 'Read in elm_soilhydrology_inparm  namelist'
+       call opnfil (NLFilename, unitn, 'F')
+       call find_nlgroup_name(unitn, 'elm_soilhydrology_inparm', status=ierr)
+       if (ierr == 0) then
+          read(unitn, elm_soilhydrology_inparm, iostat=ierr)
+          if (ierr /= 0) then
+             call endrun(msg="ERROR reading elm_soilhydrology_inparm namelist"//errmsg(__FILE__, __LINE__))
+          end if
+       end if
+       call relavu( unitn )
+
+    end if
+
+    call shr_mpi_bcast(h2osfcflag, mpicom)
+    call shr_mpi_bcast(origflag,   mpicom)
+    !! needed To avoid incorrect deepcopy to the GPU
+    allocate(this%h2osfcflag)
+    allocate(this%origflag  )
+
+
+    this%h2osfcflag = h2osfcflag
+    this%origflag   = origflag
+
+  end subroutine ReadNL
+
+end Module SoilHydrologyType

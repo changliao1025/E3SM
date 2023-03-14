@@ -15,7 +15,7 @@
       strm_year_last  is the last  year of the stream data that will be used
       strm_year_align is the model year that will be aligned with stream data for year_first
 
-      For cplhist forcing - the following substitutions will be made belwo
+      For cplhist forcing - the following substitutions will be made below
       Replace any instance of the following substring indicators with the appropriate values:
       %y    => year from the range yearfirst to yearlast
                obtained from values of <strm_year_start> -> <strm_year_end> below
@@ -37,6 +37,8 @@
         rof.cplhist
         rof.diatren_ann_rx1
         rof.diatren_iaf_rx1
+
+        rof.mosart.gageheight  #added by Chang Liao (chang.liao@pnnl.gov)
   -->
 
   <!-- ========================================================================================  -->
@@ -69,6 +71,7 @@
       <value drof_mode="RYF8485_JRA"          >rof.ryf8485_jra</value>
       <value drof_mode="RYF9091_JRA"          >rof.ryf9091_jra</value>
       <value drof_mode="RYF0304_JRA"          >rof.ryf0304_jra</value>
+      <value drof_mode="MOSART$">mosart.gageheight</value>
     </values>
   </entry>
 
@@ -90,6 +93,7 @@
       <value stream="rof.iaf_jra_1p5"          >$DIN_LOC_ROOT/lnd/dlnd7/JRA55</value>
       <value stream="rof.iaf_jra.*"            >$DIN_LOC_ROOT/lnd/dlnd7/JRA55</value>
       <value stream="rof.ryf*"                 >$DIN_LOC_ROOT/lnd/dlnd7/JRA55</value>
+      <value stream="mosart"               >$DIN_LOC_ROOT/rof/drof/mosart</value>
       <value stream="rof.cplhist"              >null</value>
     </values>
   </entry>
@@ -100,6 +104,7 @@
     <group>streams_file</group>
     <desc>Stream domain file path(s).</desc>
     <values>
+      <value>null</value>
       <value stream="rof.diatren_ann_rx1"      >runoff.daitren.annual.20190226.nc</value>
       <value stream="rof.diatren_ann_ais00_rx1">runoff.daitren.annual.20190226.nc</value>
       <value stream="rof.diatren_ann_ais45_rx1">runoff.daitren.annual.20190226.nc</value>
@@ -110,6 +115,7 @@
       <value stream="rof.diatren_iaf_ais55_rx1">runoff.daitren.iaf-AISx55.20120419.nc</value>
       <value stream="rof.iaf_jra.*"            >domain.roff.JRA025.170111.nc</value>
       <value stream="rof.ryf*"                 >domain.roff.JRA025.170111.nc</value>
+      <value stream="mosart"                   >domain.mosart.nc</value>
       <value stream="rof.cplhist"              >null</value>
     </values>
   </entry>
@@ -162,6 +168,13 @@
         domrb_aream    area
         domrb_mask     mask
       </value>
+      <value stream="mosart">
+         time   time
+        xc     lon
+        yc     lat
+        arear  area
+        mask   mask
+      </value>
     </values>
   </entry>
 
@@ -184,6 +197,7 @@
       <value stream="rof.iaf_jra.*"            >$DIN_LOC_ROOT/lnd/dlnd7/JRA55</value>
       <value stream="rof.ryf*"                 >$DIN_LOC_ROOT/lnd/dlnd7/JRA55</value>
       <value stream="rof.cplhist"              >$DROF_CPLHIST_DIR</value>
+      <value stream="mosart.gageheight"        >$DIN_LOC_ROOT/rof/drof/mosart</value>
     </values>
   </entry>
 
@@ -193,6 +207,7 @@
     <group>streams_file</group>
     <desc>Stream data file path(s).</desc>
     <values>
+      <value>null</value>
       <value stream="rof.diatren_ann_rx1"      >runoff.daitren.annual.20190226.nc</value>
       <value stream="rof.diatren_ann_ais00_rx1">runoff.daitren.annual.20190226.nc</value>
       <value stream="rof.diatren_ann_ais45_rx1">runoff.daitren.annual.20190226.nc</value>
@@ -648,6 +663,19 @@
            JRA.v1.1.runoff.2016.170807.nc
       </value>
       <value stream="rof.cplhist">$DROF_CPLHIST_CASE.cpl.hr2x.%ym.nc</value>
+      <value stream="mosart.gageheight">
+        MOSART.amazon.output.2000.nc
+        MOSART.amazon.output.2001.nc
+        MOSART.amazon.output.2002.nc
+        MOSART.amazon.output.2003.nc
+        MOSART.amazon.output.2004.nc
+        MOSART.amazon.output.2005.nc
+        MOSART.amazon.output.2006.nc
+        MOSART.amazon.output.2007.nc
+        MOSART.amazon.output.2008.nc
+        MOSART.amazon.output.2009.nc
+        MOSART.amazon.output.2010.nc
+      </value>
     </values>
   </entry>
 
@@ -681,6 +709,9 @@
         r2x_Forr_rofl  rofl
         r2x_Forr_rofi  rofi
       </value>
+      <value stream="mosart.gageheight">
+        main_channel_water_depth_liq gageheight
+      </value>
     </values>
   </entry>
 
@@ -692,6 +723,7 @@
     <values>
       <value>0</value>
       <value stream="rof.cplhist">0</value>
+      <value stream="mosart">0</value>
     </values>
   </entry>
 
@@ -708,6 +740,7 @@
       <value stream="rof.iaf_jra.*">1</value>
       <value stream="rof.ryf*">1</value>
       <value stream="rof.cplhist">$DROF_CPLHIST_YR_ALIGN</value>
+      <value stream="mosart"              >$DROF_MOSART_YR_ALIGN</value>
     </values>
   </entry>
 
@@ -717,6 +750,7 @@
     <group>streams_file</group>
     <desc>First year of stream.</desc>
     <values>
+      <value>-999</value>
       <value stream="rof.diatren_ann_rx1"      >1</value>
       <value stream="rof.diatren_ann_ais00_rx1">1</value>
       <value stream="rof.diatren_ann_ais45_rx1">1</value>
@@ -730,6 +764,7 @@
       <value stream="rof.ryf9091_jra"          >1990</value>
       <value stream="rof.ryf0304_jra"          >2003</value>
       <value stream="rof.cplhist"              >$DROF_CPLHIST_YR_START</value>
+      <value stream="mosart"              >$DROF_MOSART_YR_START</value>
     </values>
   </entry>
 
@@ -739,6 +774,7 @@
     <group>streams_file</group>
     <desc>Last year of stream.</desc>
     <values>
+      <value>-999</value>
       <value stream="rof.diatren_ann_rx1"      >1</value>
       <value stream="rof.diatren_ann_ais00_rx1">1</value>
       <value stream="rof.diatren_ann_ais45_rx1">1</value>
@@ -757,6 +793,7 @@
       <value stream="rof.ryf9091_jra"          >1990</value>
       <value stream="rof.ryf0304_jra"          >2003</value>
       <value stream="rof.cplhist"              >$DROF_CPLHIST_YR_END</value>
+      <value stream="mosart"              >$DROF_MOSART_YR_END</value>
     </values>
   </entry>
 
@@ -787,6 +824,7 @@
     <values>
       <value>COPYALL</value>
       <value drof_mode="NULL">NULL</value>
+      <value drof_mode="MOSART">COPYALL</value>
     </values>
   </entry>
 
@@ -952,6 +990,7 @@
       <value stream="rof.iaf_jra.*">upper</value>
       <value stream="rof.ryf*">upper</value>
       <value stream="rof.cplhist">nearest</value>
+      <value stream="mosart">nearest</value>
     </values>
   </entry>
 

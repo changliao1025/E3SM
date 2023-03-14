@@ -128,6 +128,15 @@ module elm_cpl_indices
   
   integer, public :: nflds_x2l = 0
 
+  !50==================================================
+  ! Author: Chang Liao( changliao at pnnl.gov )
+  ! Module: H2SC (hillslope based soil column drainage function)
+  ! rof->lnd exchange
+  ! First edit: 20180530
+  !50==================================================
+
+  integer, public :: index_x2l_Sr_gage_height  !cpl->lnd gage height for land
+
   !-----------------------------------------------------------------------
 
 contains
@@ -286,6 +295,15 @@ contains
        index_x2l_Sr_h2orof     = mct_avect_indexra(x2l,'Sr_h2orof')
        index_x2l_Sr_frac_h2orof= mct_avect_indexra(x2l,'Sr_frac_h2orof')
     endif
+
+    !50==================================================
+    ! Author: Chang Liao( changliao at pnnl.gov )
+    ! Module: H2SC (hillslope based soil column drainage function)
+    ! rof->lnd exchange
+    ! First edit: 20180530
+    !50==================================================
+
+    index_x2l_Sr_gage_height   = mct_avect_indexra(x2l,'Sr_gage_height')
 
     !-------------------------------------------------------------
     ! glc coupling

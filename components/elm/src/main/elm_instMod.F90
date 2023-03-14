@@ -80,6 +80,15 @@ module elm_instMod
   use UrbanParamsType            , only : urbanparams_vars
   use controlMod                 , only : nlfilename
 
+ !50==================================================
+  ! Author: Chang Liao( changliao at pnnl.gov )
+  ! Module: H2SC (hillslope based soil column drainage function)
+  ! rof->lnd exchange
+  ! First edit: 20180625
+  ! Details: Replace the original import to the new import
+  !50==================================================
+
+  use rof2lndType, only :rof2lnd_type
 
   !
   implicit none
@@ -133,7 +142,15 @@ module elm_instMod
   public :: elm_inst_biogeochem
   public :: elm_inst_biogeophys
   public :: alm_fates
+  !50==================================================
+  ! Author: Chang Liao( changliao at pnnl.gov )
+  ! Module: H2SC (hillslope based soil column drainage function)
+  ! rof->lnd exchange
+  ! First edit: 20180625
+  ! Details: Replace the original import to the new import
+  !50==================================================
 
+  type(rof2lnd_type) :: rof2lnd_vars
 contains
 
 
@@ -470,6 +487,15 @@ contains
 
     deallocate (h2osno_col)
     deallocate (snow_depth_col)
+
+      !50==================================================
+    ! Author: Chang Liao( changliao at pnnl.gov )
+    ! Module: h2sc (hillslope based soil column drainage function)
+    ! rof->lnd exchange
+    ! First edit: 20180625
+    ! Details: Replace the original import to the new import
+    !50==================================================
+    call rof2lnd_vars%Init(bounds_proc)
 
     end subroutine elm_inst_biogeophys
 

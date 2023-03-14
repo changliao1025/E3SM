@@ -2413,6 +2413,29 @@ contains
        call metadata_set(attname, longname, stdname, units)
     endif !rof2ocn_nutrients
 
+     !50==================================================
+    ! Author: Chang Liao( changliao at pnnl.gov )
+    ! Module: H2SC (hillslope based soil column drainage function)
+    ! rof->lnd exchange
+    ! First edit: 20180625
+    ! Details: Add indices for gaga height
+    !50==================================================
+    !call seq_flds_add(r2x_states,'Sr_channel_depth')
+    !call seq_flds_add(x2l_states,'Sr_channel_depth')
+    !longname = 'Channel depth from mosart'
+    !stdname  = 'channel_depth_from_mosart'
+    !units    = 'meter'
+    !attname  = 'Sr_channel_depth'
+    !call metadata_set(attname, longname, stdname, units)
+
+    call seq_flds_add(r2x_states,'Sr_gage_height')
+    call seq_flds_add(x2l_states,'Sr_gage_height')
+    longname = 'Gage height from stream flow'
+    stdname  = 'gage_height_from_stream_flow'
+    units    = 'meter'
+    attname  = 'Sr_gage_height'
+    call metadata_set(attname, longname, stdname, units)
+
     !-----------------------------
     ! wav->ocn and ocn->wav
     !-----------------------------

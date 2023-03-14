@@ -71,7 +71,7 @@ CONTAINS
     character(*), parameter :: F01   = "('(drof_comp_init) ',a,5i8)"
     character(*), parameter :: F02   = "('(drof_comp_init) ',a,4es13.6)"
     character(*), parameter :: F06   = "('(drof_comp_init) ',a,5l3)"
-    character(*), parameter :: subName = "(shr_drof_read_namelists) "
+    character(*), parameter :: subName = "(shr_drof_read_namelists)"
     !-------------------------------------------------------------------------------
 
     !----- define namelist -----
@@ -127,7 +127,9 @@ CONTAINS
     ! Validate mode
 
     if (trim(datamode) == 'NULL' .or. &
-        trim(datamode) == 'COPYALL') then
+        trim(datamode) == 'COPYALL' .or. &
+        trim(datamode) == 'MOSART') then
+
         if (my_task == master_task) then
            write(logunit,F00) 'drof datamode = ',trim(datamode)
         end if

@@ -59,12 +59,12 @@ module controlMod
   ! !PUBLIC TYPES:
   implicit none
   save
-  
+
   ! !PUBLIC MEMBER FUNCTIONS:
   public :: control_setNL ! Set namelist filename
   public :: control_init  ! initial run control information
   public :: control_print ! print run control information
-  
+
   ! !PRIVATE TYPES:
   character(len=  7) :: runtyp(4)                        ! run type
   character(len=SHR_KIND_CL) :: NLFilename = 'lnd.stdin' ! Namelist filename
@@ -78,14 +78,14 @@ contains
 
   !------------------------------------------------------------------------
   subroutine control_setNL( NLfile )
-    
+
     ! !DESCRIPTION:
     ! Set the namelist filename to use
-    
+
     ! !ARGUMENTS:
     implicit none
     character(len=*), intent(IN) :: NLFile ! Namelist filename
-    
+
     ! !LOCAL VARIABLES:
     character(len=32) :: subname = 'control_setNL'  ! subroutine name
     logical :: lexist                               ! File exists
@@ -110,19 +110,19 @@ contains
 
   !------------------------------------------------------------------------
   subroutine control_init( )
-    
+
     ! !DESCRIPTION:
     ! Initialize CLM run control information
-    
+
     ! !USES:
     use clm_time_manager          , only : set_timemgr_init, get_timemgr_defaults
     use fileutils                 , only : getavu, relavu
     use shr_string_mod            , only : shr_string_getParentDir
     use elm_interface_pflotranMod , only : elm_pf_readnl
     use ELMBeTRNLMod              , only : betr_readNL
-    
+
     implicit none
-    
+
     ! !LOCAL VARIABLES:
     character(len=32)  :: starttype ! infodata start type
     integer :: i,j,n                ! loop indices
@@ -241,24 +241,24 @@ contains
 
     ! C and N input vertical profiles
     namelist /elm_inparm/  &
-          exponential_rooting_profile, rootprof_exp, surfprof_exp, pftspecific_rootingprofile
+         exponential_rooting_profile, rootprof_exp, surfprof_exp, pftspecific_rootingprofile
 
     namelist /elm_inparm / no_frozen_nitrif_denitrif
 
     namelist /elm_inparm / use_c13, use_c14
 
     namelist /elm_inparm/ fates_paramfile, use_fates,      &
-          fates_spitfire_mode, use_fates_logging,        &
-          use_fates_planthydro, use_fates_ed_st3,       &
-          use_fates_cohort_age_tracking,                &
-          use_fates_ed_prescribed_phys,                 &
-          use_fates_inventory_init,                     &
-          fates_inventory_ctrl_filename,                &
-          use_fates_fixed_biogeog,                      &
-          use_fates_nocomp,                             &
-          use_fates_sp,                                 &
-          fates_parteh_mode,                            &
-          use_fates_tree_damage
+         fates_spitfire_mode, use_fates_logging,        &
+         use_fates_planthydro, use_fates_ed_st3,       &
+         use_fates_cohort_age_tracking,                &
+         use_fates_ed_prescribed_phys,                 &
+         use_fates_inventory_init,                     &
+         fates_inventory_ctrl_filename,                &
+         use_fates_fixed_biogeog,                      &
+         use_fates_nocomp,                             &
+         use_fates_sp,                                 &
+         fates_parteh_mode,                            &
+         use_fates_tree_damage
 
     namelist /elm_inparm / use_betr
 
@@ -292,10 +292,13 @@ contains
          use_vsfm, vsfm_satfunc_type, vsfm_use_dynamic_linesearch, &
          vsfm_lateral_model_type, vsfm_include_seepage_bc
 
+    !added for h2sc model
+    namelist /elm_inparm/ use_h2sc, hydraulic_anisotropy, fover
+
     namelist /elm_inparm/ use_hydrstress
 
     namelist /elm_inparm/ &
-       lateral_connectivity, domain_decomp_type
+         lateral_connectivity, domain_decomp_type
 
     namelist /elm_inparm/ &
          use_petsc_thermal_model
@@ -303,8 +306,8 @@ contains
     namelist /elm_inparm/ &
          do_budgets, budget_inst, budget_daily, budget_month, &
          budget_ann, budget_ltann, budget_ltend
- 
-    namelist /elm_inparm/ & 
+
+    namelist /elm_inparm/ &
          use_atm_downscaling_to_topunit, precip_downscaling_method
 
     namelist /elm_inparm/ &
@@ -315,10 +318,10 @@ contains
 
     namelist /elm_mosart/ &
          lnd_rof_coupling_nstep
-		 
+
     namelist /elm_inparm/ &
-         snow_shape, snicar_atm_type, use_dust_snow_internal_mixing 
-    
+         snow_shape, snicar_atm_type, use_dust_snow_internal_mixing
+
     ! ----------------------------------------------------------------------
     ! Default values
     ! ----------------------------------------------------------------------
@@ -400,12 +403,12 @@ contains
        ! Override start-type (can only override to branch (3)  and only
        ! if the driver is a startup type
        if ( override_nsrest /= nsrest )then
-           if ( override_nsrest /= nsrBranch .and. nsrest /= nsrStartup )then
-              call endrun(msg= ' ERROR: can ONLY override elm start-type ' // &
-                   'to branch type and ONLY if driver is a startup type'// &
-                   errMsg(__FILE__, __LINE__))
-           end if
-           call elm_varctl_set( nsrest_in=override_nsrest )
+          if ( override_nsrest /= nsrBranch .and. nsrest /= nsrStartup )then
+             call endrun(msg= ' ERROR: can ONLY override elm start-type ' // &
+                  'to branch type and ONLY if driver is a startup type'// &
+                  errMsg(__FILE__, __LINE__))
+          end if
+          call elm_varctl_set( nsrest_in=override_nsrest )
        end if
 
        if (maxpatch_glcmec > 0) then
@@ -421,27 +424,27 @@ contains
 
           if ( use_cn) then
              call endrun(msg=' ERROR: use_cn and use_fates cannot both be set to true.'//&
-                   errMsg(__FILE__, __LINE__))
+                  errMsg(__FILE__, __LINE__))
           end if
 
           if ( use_crop ) then
              call endrun(msg=' ERROR: use_crop and use_fates cannot both be set to true.'//&
-                   errMsg(__FILE__, __LINE__))
+                  errMsg(__FILE__, __LINE__))
           end if
 
           if ( n_drydep > 0 .and. drydep_method /= DD_XLND ) then
              call endrun(msg=' ERROR: dry deposition via ML Welsey is not compatible with FATES.'//&
-                   errMsg(__FILE__, __LINE__))
+                  errMsg(__FILE__, __LINE__))
           end if
 
           if (use_c13 .or. use_c14) then
-              call endrun(msg=' ERROR:: use_c13 and use_c14 are not compatible with FATES.'//&
-                    errMsg(__FILE__, __LINE__))
+             call endrun(msg=' ERROR:: use_c13 and use_c14 are not compatible with FATES.'//&
+                  errMsg(__FILE__, __LINE__))
           end if
 
           if(nu_com_nfix) then
-              call endrun(msg=' ERROR:: n_com_nfix and use_fates cannot both be true'//&
-                    errMsg(__FILE__, __LINE__))
+             call endrun(msg=' ERROR:: n_com_nfix and use_fates cannot both be true'//&
+                  errMsg(__FILE__, __LINE__))
           end if
 
           ! If parteh mode > 1, then NP are turned on, potentially
@@ -465,7 +468,7 @@ contains
 
           if ( use_var_soil_thick ) then
              call endrun(msg=' ERROR: use_var_soil_thick and use_fates cannot both be set to true.'//&
-                   errMsg(__FILE__, __LINE__))
+                  errMsg(__FILE__, __LINE__))
           end if
 
        end if
@@ -473,20 +476,20 @@ contains
 
        if (use_crop .and. (use_c13 .or. use_c14)) then
           call endrun(msg=' ERROR:: CROP and C13/C14 can NOT be on at the same time'//&
-            errMsg(__FILE__, __LINE__))
+               errMsg(__FILE__, __LINE__))
        end if
 
        if (use_crop .and. .not. create_crop_landunit) then
           call endrun(msg=' ERROR: prognostic crop Patches require create_crop_landunit=.true.'//&
-            errMsg(__FILE__, __LINE__))
+               errMsg(__FILE__, __LINE__))
        end if
 
        if (.not. use_erosion .and. ero_ccycle) then
           call endrun(msg=' ERROR: ero_ccycle = .true. requires erosion model active.'//&
-            errMsg(__FILE__, __LINE__))
+               errMsg(__FILE__, __LINE__))
        end if
 
-       if (use_lch4 .and. use_vertsoilc) then 
+       if (use_lch4 .and. use_vertsoilc) then
           anoxia = .true.
        else
           anoxia = .false.
@@ -503,35 +506,35 @@ contains
        ! ----------------------------------------------------------------------
        ! bgc & pflotran interface
        if(.not.use_elm_interface) then
-            use_elm_bgc     = .false.
-            use_pflotran    = .false.
+          use_elm_bgc     = .false.
+          use_pflotran    = .false.
        else
-       ! use_elm_interface
-            if (use_elm_bgc) then
-                use_pflotran = .false.
-            end if
+          ! use_elm_interface
+          if (use_elm_bgc) then
+             use_pflotran = .false.
+          end if
 
-            if (use_pflotran) then
-                use_elm_bgc = .false.
-            end if
+          if (use_pflotran) then
+             use_elm_bgc = .false.
+          end if
        end if
 
        if (use_pflotran) then
           if (use_var_soil_thick) then
              call endrun(msg='ERROR: use_var_soil_thick and use_pflotran cannot both be set to true.'//&
-                      errMsg(__FILE__, __LINE__))
+                  errMsg(__FILE__, __LINE__))
           end if
        end if
 
        if (use_betr .and. use_var_soil_thick ) then
           call endrun(msg=' ERROR: use_var_soil_thick and use_betr cannot both be set to true.'//&
-                   errMsg(__FILE__, __LINE__))
+               errMsg(__FILE__, __LINE__))
        end if
 
        if (use_lnd_rof_two_way) then
           if (lnd_rof_coupling_nstep < 1) then
-          call endrun(msg=' ERROR: lnd_rof_coupling_nstep cannot be smaller than 1.'//&
-                   errMsg(__FILE__, __LINE__))     
+             call endrun(msg=' ERROR: lnd_rof_coupling_nstep cannot be smaller than 1.'//&
+                  errMsg(__FILE__, __LINE__))
           endif
        endif
 
@@ -603,7 +606,7 @@ contains
             errMsg(__FILE__, __LINE__))
        if (.not. use_lch4 .and. anoxia) then
           call endrun(msg='ERROR:: anoxia is turned on, but this currently requires turning on the CH4 submodel'//&
-            errMsg(__FILE__, __LINE__))
+               errMsg(__FILE__, __LINE__))
        end if
     end if
 
@@ -614,9 +617,9 @@ contains
     end if
 
     if (vsfm_satfunc_type /= 'brooks_corey'             .and. &
-        vsfm_satfunc_type /= 'smooth_brooks_corey_bz2'  .and. &
-        vsfm_satfunc_type /= 'smooth_brooks_corey_bz3'  .and. &
-        vsfm_satfunc_type /= 'van_genuchten') then
+         vsfm_satfunc_type /= 'smooth_brooks_corey_bz2'  .and. &
+         vsfm_satfunc_type /= 'smooth_brooks_corey_bz3'  .and. &
+         vsfm_satfunc_type /= 'van_genuchten') then
        write(iulog,*)'vsfm_satfunc_type = ',vsfm_satfunc_type,' is not supported'
        call endrun(msg=' ERROR:: choices are brooks_corey, smooth_brooks_corey_bz2, '//&
             'smooth_brooks_corey_bz3 or van_genuchten'//&
@@ -624,8 +627,8 @@ contains
     end if
 
     if (vsfm_lateral_model_type /= 'none'        .and. &
-        vsfm_lateral_model_type /= 'source_sink' .and. &
-        vsfm_lateral_model_type /= 'three_dimensional' ) then
+         vsfm_lateral_model_type /= 'source_sink' .and. &
+         vsfm_lateral_model_type /= 'three_dimensional' ) then
        write(iulog,*)'vsfm_lateral_model_type = ',trim(vsfm_lateral_model_type), ' is not supported'
        call endrun(msg=' ERROR:: choices are source_sink or three_dimensional ' // &
             errMsg(__FILE__, __LINE__))
@@ -655,7 +658,7 @@ contains
 
   !------------------------------------------------------------------------
   subroutine control_spmd()
-    
+
     ! !DESCRIPTION:
     ! Distribute namelist data all processors. All program i/o is
     ! funnelled through the master processor. Processor 0 either
@@ -664,13 +667,13 @@ contains
     ! all processors and writes it to disk.
     !
     ! !USES:
-    
+
     use spmdMod,    only : mpicom, MPI_CHARACTER, MPI_INTEGER, MPI_LOGICAL, MPI_REAL8
     use elm_varpar, only : numrad
-    
+
     ! !ARGUMENTS:
     implicit none
-    
+
     ! !LOCAL VARIABLES:
     integer ier       !error code
     !-----------------------------------------------------------------------
@@ -775,7 +778,7 @@ contains
     call mpi_bcast (use_fates_ed_prescribed_phys,  1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (use_fates_inventory_init, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (fates_inventory_ctrl_filename, len(fates_inventory_ctrl_filename), &
-          MPI_CHARACTER, 0, mpicom, ier)
+         MPI_CHARACTER, 0, mpicom, ier)
     call mpi_bcast (fates_parteh_mode, 1, MPI_INTEGER, 0, mpicom, ier)
     call mpi_bcast (use_fates_tree_damage, 1, MPI_LOGICAL, 0, mpicom, ier)
 
@@ -837,7 +840,7 @@ contains
     call mpi_bcast (more_vertlayers,1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (const_climate_hist, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (use_top_solar_rad, 1, MPI_LOGICAL, 0, mpicom, ier)  ! TOP solar radiation parameterization
-    
+
     ! glacier_mec variables
     call mpi_bcast (create_glacier_mec_landunit, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (maxpatch_glcmec, 1, MPI_INTEGER, 0, mpicom, ier)
@@ -891,11 +894,11 @@ contains
     call mpi_bcast (use_pflotran, 1, MPI_LOGICAL, 0, mpicom, ier)
 
     !cpl_bypass
-     call mpi_bcast (metdata_type,   len(metdata_type),   MPI_CHARACTER, 0, mpicom, ier)
-     call mpi_bcast (metdata_bypass, len(metdata_bypass), MPI_CHARACTER, 0, mpicom, ier)
-     call mpi_bcast (metdata_biases, len(metdata_biases), MPI_CHARACTER, 0, mpicom, ier)
-     call mpi_bcast (co2_file,       len(co2_file),       MPI_CHARACTER, 0, mpicom, ier)
-     call mpi_bcast (aero_file,      len(aero_file),      MPI_CHARACTER, 0, mpicom, ier)
+    call mpi_bcast (metdata_type,   len(metdata_type),   MPI_CHARACTER, 0, mpicom, ier)
+    call mpi_bcast (metdata_bypass, len(metdata_bypass), MPI_CHARACTER, 0, mpicom, ier)
+    call mpi_bcast (metdata_biases, len(metdata_biases), MPI_CHARACTER, 0, mpicom, ier)
+    call mpi_bcast (co2_file,       len(co2_file),       MPI_CHARACTER, 0, mpicom, ier)
+    call mpi_bcast (aero_file,      len(aero_file),      MPI_CHARACTER, 0, mpicom, ier)
 
     ! plant hydraulics
     call mpi_bcast (use_hydrstress, 1, MPI_LOGICAL, 0, mpicom, ier)
@@ -911,14 +914,19 @@ contains
 
     ! PETSc-based thermal model
     call mpi_bcast (use_petsc_thermal_model, 1, MPI_LOGICAL, 0, mpicom, ier)
-    
+
     ! Downscaling of atmospheric forcing to topounits
     call mpi_bcast (use_atm_downscaling_to_topunit, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (precip_downscaling_method, len(precip_downscaling_method), MPI_CHARACTER, 0, mpicom, ier)
-    
+
     ! soil erosion
     call mpi_bcast (use_erosion, 1, MPI_LOGICAL, 0, mpicom, ier)
     call mpi_bcast (ero_ccycle , 1, MPI_LOGICAL, 0, mpicom, ier)
+
+    !h2sc
+    call mpi_bcast (use_h2sc , 1, MPI_LOGICAL, 0, mpicom, ier)
+    call mpi_bcast (hydraulic_anisotropy, 1, MPI_REAL8,0, mpicom, ier)
+    call mpi_bcast (fover, 1, MPI_REAL8,0, mpicom, ier)
 
     ! Budget
     call mpi_bcast (do_budgets   , 1, MPI_LOGICAL, 0, mpicom, ier)
@@ -937,23 +945,23 @@ contains
     call mpi_bcast (snow_shape, len(snow_shape), MPI_CHARACTER, 0, mpicom, ier)
     call mpi_bcast (snicar_atm_type, len(snicar_atm_type), MPI_CHARACTER, 0, mpicom, ier)
     call mpi_bcast (use_dust_snow_internal_mixing, 1, MPI_LOGICAL, 0, mpicom, ier)
-	
+
   end subroutine control_spmd
 
   !------------------------------------------------------------------------
   subroutine control_print ()
-    
+
     ! !DESCRIPTION:
     ! Write out the clm namelist run control variables
-    
+
     ! !USES:
-    
+
     use AllocationMod, only : suplnitro, suplnNon
     use AllocationMod, only : suplphos, suplpNon
-    
+
     ! !ARGUMENTS:
     implicit none
-    
+
     ! !LOCAL VARIABLES:
     integer i  !loop index
     character(len=32) :: subname = 'control_print'  ! subroutine name
@@ -993,7 +1001,7 @@ contains
     write(iulog,*) '    precip_downscaling_method = ', precip_downscaling_method
     write(iulog,*) 'input data files:'
     write(iulog,*) '   PFT physiology and parameters file = ',trim(paramfile)
-    write(iulog,*) '   Soil order dependent parameters file = ',trim(fsoilordercon)    
+    write(iulog,*) '   Soil order dependent parameters file = ',trim(fsoilordercon)
     if (fsurdat == ' ') then
        write(iulog,*) '   fsurdat, surface dataset not set'
     else
@@ -1014,13 +1022,13 @@ contains
     else
        write(iulog,*) '   atm topographic data = ',trim(fatmtopo)
     end if
-    
+
     if (use_top_solar_rad) then
-        write(iulog,*) '  use TOP solar radiation parameterization instead of PP'
+       write(iulog,*) '  use TOP solar radiation parameterization instead of PP'
     else
-        write(iulog,*) '   use_top_solar_rad is False, so do not run TOP solar radiation parameterization'
+       write(iulog,*) '   use_top_solar_rad is False, so do not run TOP solar radiation parameterization'
     end if
-    
+
     if (use_cn) then
        if (suplnitro /= suplnNon)then
           write(iulog,*) '   Supplemental Nitrogen mode is set to run over Patches: ', &
@@ -1047,10 +1055,10 @@ contains
 
        write(iulog,*) '   override_bgc_restart_mismatch_dump                     : ', override_bgc_restart_mismatch_dump
     end if
-       if (suplphos /= suplpNon)then
-          write(iulog,*) '   Supplemental Phosphorus mode is set to run over Patches: ', &
-               trim(suplphos)
-       end if
+    if (suplphos /= suplpNon)then
+       write(iulog,*) '   Supplemental Phosphorus mode is set to run over Patches: ', &
+            trim(suplphos)
+    end if
 
     if (use_cn .and. use_vertsoilc) then
        write(iulog, *) '   som_adv_flux, the advection term in soil mixing (m/s) : ', som_adv_flux
@@ -1133,9 +1141,9 @@ contains
     write(iulog,*) '   implicit_stress   = ', implicit_stress
     write(iulog,*) '   atm_gustiness   = ', atm_gustiness
     write(iulog,*) '   more vertical layers = ', more_vertlayers
-    
+
     write(iulog,*) '   Sub-grid topographic effects on solar radiation   = ', use_top_solar_rad  ! TOP solar radiation parameterization
-     
+
     if (nsrest == nsrContinue) then
        write(iulog,*) 'restart warning:'
        write(iulog,*) '   Namelist not checked for agreement with initial run.'
@@ -1159,10 +1167,10 @@ contains
     write(iulog,*)
     write(iulog,*) 'Lake Model Namelists:'
     write(iulog,*) 'Increased mixing relative to Hostetler wind-driven eddy expression ',&
-                   'will be used for deep lakes exceeding depth ', deepmixing_depthcrit,&
-                      ' by a factor of ', deepmixing_mixfact, '.'
+         'will be used for deep lakes exceeding depth ', deepmixing_depthcrit,&
+         ' by a factor of ', deepmixing_mixfact, '.'
     write(iulog,*) 'Albedo over melting lakes will approach values (visible, NIR):', lake_melt_icealb, &
-                   'as compared with 0.60, 0.40 for cold frozen lakes with no snow.'
+         'as compared with 0.60, 0.40 for cold frozen lakes with no snow.'
 
     ! FATES
     write(iulog, *) '    use_fates = ', use_fates
@@ -1190,6 +1198,14 @@ contains
        write(iulog, *) '  vsfm_satfunc_type                                      : ', vsfm_satfunc_type
        write(iulog, *) '  vsfm_use_dynamic_linesearch                            : ', vsfm_use_dynamic_linesearch
        write(iulog,*) '  vsfm_lateral_model_type                                 : ', vsfm_lateral_model_type
+    endif
+
+    if (use_h2sc) then
+       write(iulog,*)
+       write(iulog,*) 'H2SC Namelists:'
+       write(iulog, *) '  h2sc flag                        : ', use_h2sc
+       write(iulog, *) '  h2sc hydraulic anisotropy   : ', hydraulic_anisotropy
+       write(iulog, *) '  h2sc fover   : ', fover
     endif
 
     ! land river two way coupling

@@ -44,6 +44,9 @@ module prep_lnd_mod
   public :: prep_lnd_get_mapper_Sa2l
   public :: prep_lnd_get_mapper_Fa2l
   public :: prep_lnd_get_mapper_Fr2l
+
+  public :: prep_lnd_get_mapper_Sr2l !h2sc
+
   public :: prep_lnd_get_mapper_Sg2l
   public :: prep_lnd_get_mapper_Fg2l
 
@@ -62,6 +65,9 @@ module prep_lnd_mod
   type(seq_map), pointer :: mapper_Sa2l           ! needed in ccsm_comp_mod.F90 (setting of aream)
   type(seq_map), pointer :: mapper_Fa2l           ! needed in ccsm_comp_mod.F90 (seq_domain_check)
   type(seq_map), pointer :: mapper_Fr2l           ! needed in seq_frac_mct.F90
+   !h2sc
+  type(seq_map), pointer :: mapper_Sr2l 
+
   type(seq_map), pointer :: mapper_Sg2l           ! currently unused (all g2l mappings use the flux mapper)
   type(seq_map), pointer :: mapper_Fg2l
 
@@ -132,6 +138,7 @@ contains
     allocate(mapper_Sa2l)
     allocate(mapper_Fa2l)
     allocate(mapper_Fr2l)
+    allocate(mapper_Sr2l) !h2sc
     allocate(mapper_Sg2l)
     allocate(mapper_Fg2l)
 
@@ -167,6 +174,16 @@ contains
        if (trim(lnd_gnam) /= trim(glc_gnam)) samegrid_lg = .false.
 
        if (rof_c2_lnd) then
+
+         !h2sc
+         if (iamroot_CPLID) then
+            write(logunit,*) ' '
+            write(logunit,F00) 'Initializing mapper_Sr2l'
+          end if
+            call seq_map_init_rcfile(mapper_Sr2l, rof(1), lnd(1), &
+            'seq_maps.rc','rof2lnd_smapname:','rof2lnd_smaptype:',samegrid_lr, &
+            string='mapper_Sr2l initialization',esmf_map=esmf_map_flag)
+
           if (iamroot_CPLID) then
              write(logunit,*) ' '
              write(logunit,F00) 'Initializing mapper_Fr2l'
@@ -425,6 +442,10 @@ contains
        ! equivalent.
        call seq_map_map(mapper_Fr2l, r2x_rx, r2x_lx(eri), &
             fldlist=seq_flds_r2x_fluxes, norm=.true.)
+
+      !added by h2sc
+            call seq_map_map(mapper_Sr2l, r2x_rx, r2x_lx(eri), &
+            fldlist=seq_flds_r2x_states, norm=.true.)
     enddo
     call t_drvstopf  (trim(timer))
 
@@ -535,6 +556,12 @@ contains
     type(seq_map), pointer :: prep_lnd_get_mapper_Fr2l
     prep_lnd_get_mapper_Fr2l => mapper_Fr2l
   end function prep_lnd_get_mapper_Fr2l
+
+   !h2sc
+  function prep_lnd_get_mapper_Sr2l()
+   type(seq_map), pointer :: prep_lnd_get_mapper_Sr2l
+   prep_lnd_get_mapper_Sr2l => mapper_Sr2l
+ end function prep_lnd_get_mapper_Sr2l
 
   function prep_lnd_get_mapper_Sg2l()
     type(seq_map), pointer :: prep_lnd_get_mapper_Sg2l

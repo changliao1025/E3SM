@@ -14,6 +14,9 @@ module HydrologyDrainageMod
   use SoilHydrologyType , only : soilhydrology_type
   use SoilStateType     , only : soilstate_type
   use SoilHydrologyMod  , only : WaterTable
+
+
+
   use TopounitDataType  , only : top_af ! atmospheric flux variables
   use LandunitType      , only : lun_pp
   use ColumnType        , only : col_pp
@@ -58,6 +61,11 @@ contains
     use elm_varpar       , only : nlevgrnd, nlevurb, nlevsoi
     use SoilHydrologyMod , only : ELMVICMap, Drainage
     use elm_varctl       , only : use_vsfm
+    
+     !h2sc
+    use SoilHydrologyMod , only : DrainageH2SC
+    use elm_varctl       , only : use_h2sc
+
     !
     ! !ARGUMENTS:
     type(bounds_type)        , intent(in)    :: bounds
@@ -139,10 +147,31 @@ contains
       endif
 #endif
 
+      !50==================================================
+      ! Author: Chang Liao( changliao at pnnl.gov )
+      ! Module: H2SC (hillslope based soil column drainage function)
+      ! rof->lnd exchange
+      ! First edit: 20180625
+      ! Details: added the use_h2sc as a double criteria
+      !50==================================================
       if (.not. use_vsfm) then
-         call Drainage(bounds, num_hydrologyc, filter_hydrologyc, &
+         if(.not. use_h2sc) then
+
+            call Drainage(bounds, num_hydrologyc, filter_hydrologyc, &
               num_urbanc, filter_urbanc,&
-              soilhydrology_vars, soilstate_vars, dtime)
+               soilhydrology_vars,  &
+              soilstate_vars, dtime)
+              !write(iulog,*) 'h2sc model is not called'
+
+         else            
+          !write(iulog,*) 'H2SC drainage is called'
+           call DrainageH2SC(bounds, num_hydrologyc, filter_hydrologyc, &
+                num_urbanc, filter_urbanc,  &
+                 soilhydrology_vars, soilstate_vars, &
+              dtime )
+              
+
+         endif
       endif
 
 #ifndef _OPENACC

@@ -36,6 +36,7 @@
       <grid name="rof"    compset="MOSART">r05</grid>
       <grid name="rof"    compset="DROF">rx1</grid>
       <grid name="rof"    compset="DROF%CPLHIST">r05</grid>
+      <grid name="rof"    compset="DROF%MOSART">r05</grid>
       <grid name="rof"    compset="XROF">r05</grid>
       <grid name="glc"    compset="SGLC">null</grid>
       <grid name="glc"    compset="CISM1">gland5UM</grid>
@@ -57,11 +58,11 @@
       <mask>gx1v6</mask>
     </model_grid>
 
-    <model_grid alias="ELM_USRDAT" compset="(DATM|SATM).+ELM">
+    <model_grid alias="ELM_USRDAT" compset="(DATM|SATM).+ELM.+(DROF|MOSART)">
       <grid name="atm">ELM_USRDAT</grid>
       <grid name="lnd">ELM_USRDAT</grid>
       <grid name="ocnice">ELM_USRDAT</grid>
-      <grid name="rof">null</grid>
+      <grid name="rof">ELM_USRDAT</grid>
       <grid name="glc">null</grid>
       <grid name="wav">null</grid>
       <mask>reg</mask>

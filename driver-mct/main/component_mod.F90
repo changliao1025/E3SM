@@ -396,9 +396,9 @@ contains
                 call seq_mctext_gGridInit(comp(1))
 
                 if (size(comp) > 1) then
-                    mpi_tag = comp(eci)%cplcompid*100+eci*10+1
+                   mpi_tag = comp(eci)%cplcompid*100+eci*10+1
                 else
-                    mpi_tag = comp(eci)%cplcompid*10000+eci*10+1
+                   mpi_tag = comp(eci)%cplcompid*10000+eci*10+1
                 end if
                 call seq_map_map_exchange(comp(1), flow='c2x', dom_flag=.true., msgtag=mpi_tag)
 
@@ -427,8 +427,11 @@ contains
 
   !===============================================================================
 
+  !subroutine component_init_aream(infodata, rof_c2_ocn, samegrid_ao, samegrid_al, &
+  !     samegrid_ro, samegrid_lg)
+  !h2sc
   subroutine component_init_aream(infodata, rof_c2_ocn, samegrid_ao, samegrid_al, &
-       samegrid_ro, samegrid_lg)
+       samegrid_ro, samegrid_lg, samegrid_lr)
 
     !---------------------------------------------------------------
     ! Description
@@ -440,6 +443,8 @@ contains
     use prep_ice_mod,       only : prep_ice_get_mapper_SFo2i
     use prep_glc_mod,       only : prep_glc_get_mapper_Sl2g
     use component_type_mod, only : atm, lnd, ice, ocn, rof, glc
+
+    use prep_lnd_mod,       only : prep_lnd_get_mapper_Sr2l !h2sc
     !
     ! Arguments
     type (seq_infodata_type) , intent(inout) :: infodata
@@ -447,6 +452,7 @@ contains
     logical                  , intent(in)    :: samegrid_ao
     logical                  , intent(in)    :: samegrid_al
     logical                  , intent(in)    :: samegrid_ro
+    logical                  , intent(in)    :: samegrid_lr !h2sc land rof
     logical                  , intent(in)    :: samegrid_lg  ! lnd & glc on same grid
     !
     ! Local variables
@@ -456,11 +462,13 @@ contains
     type(seq_map)  , pointer :: mapper_Sa2l
     type(seq_map)  , pointer :: mapper_SFo2i
     type(seq_map)  , pointer :: mapper_Sl2g
+    type(seq_map)  , pointer :: mapper_Sr2l  !h2sc
     logical                  :: atm_present ! atm present flag
     logical                  :: lnd_present ! lnd present flag
     logical                  :: ocn_present ! ocn present flag
     logical                  :: ice_present ! ice present flag
     logical                  :: glc_present ! glc present flag
+    logical                  :: rof_present ! rof present flag h2sc
     integer                  :: ka,km
     character(*), parameter :: subname = '(component_init_aream)'
     !---------------------------------------------------------------
@@ -473,13 +481,46 @@ contains
     mapper_SFo2i => prep_ice_get_mapper_SFo2i()
     mapper_Sl2g  => prep_glc_get_mapper_Sl2g()
 
+    mapper_Sr2l => prep_lnd_get_mapper_Sr2l() !h2sc
+    !call seq_infodata_GetData( infodata, &
+    !     atm_present=atm_present,        &
+    !     ocn_present=ocn_present,        &
+    !     ice_present=ice_present,        &
+    !     lnd_present=lnd_present,        &
+    !     glc_present=glc_present)
     call seq_infodata_GetData( infodata, &
          atm_present=atm_present,        &
          ocn_present=ocn_present,        &
          ice_present=ice_present,        &
          lnd_present=lnd_present,        &
-         glc_present=glc_present)
+         glc_present=glc_present, &
+         rof_present =rof_present) !h2sc added rof present
+    !h2sc added this
+    if(lnd_present .and. rof_present) then
 
+       if(samegrid_lr)then
+          dom_s  => component_get_dom_cx(rof(1))   !dom_ax
+          dom_d  => component_get_dom_cx(lnd(1))   !dom_ox
+          ka = mct_aVect_indexRa(dom_s%data, "area" )
+          km = mct_aVect_indexRa(dom_s%data, "aream" )
+          dom_s%data%rAttr(km,:) = dom_s%data%rAttr(ka,:)
+
+          call seq_map_map(mapper_Sr2l, av_s=dom_s%data, av_d=dom_d%data, fldlist='aream')
+       else
+          !write(logunit,*) 'h2sc land grid different with rof grid'
+          gsmap_s => component_get_gsmap_cx(rof(1)) ! gsmap_rx
+          dom_s   => component_get_dom_cx(rof(1))   ! dom_rx
+
+          gsmap_d => component_get_gsmap_cx(lnd(1)) ! gsmap_lx
+          dom_d   => component_get_dom_cx(lnd(1))   ! dom_lx
+
+          call seq_map_readdata('seq_maps.rc','rof2lnd_smapname:',mpicom_CPLID,     CPLID, &
+               gsmap_s=gsmap_s, av_s=dom_s%data, avfld_s='aream', filefld_s='area_a', &
+               gsmap_d=gsmap_d, av_d=dom_d%data, avfld_d='aream', filefld_d='area_b', &
+               string='rof2lnd aream initialization')
+       end if
+    end if
+    
     if (atm_present .and. ocn_present) then
        if (samegrid_ao) then
           dom_s  => component_get_dom_cx(atm(1))   !dom_ax
@@ -623,9 +664,9 @@ contains
 
           ! Map corrected initial component AVs from component to coupler pes
           if (num_inst > 1) then
-              mpi_tag = comp(eci)%cplcompid*100+eci*10+7
+             mpi_tag = comp(eci)%cplcompid*100+eci*10+7
           else
-              mpi_tag = comp(eci)%cplcompid*10000+eci*10+7
+             mpi_tag = comp(eci)%cplcompid*10000+eci*10+7
           end if
           call seq_map_map(comp(eci)%mapper_cc2x, comp(eci)%c2x_cc, comp(eci)%c2x_cx, msgtag=mpi_tag)
 

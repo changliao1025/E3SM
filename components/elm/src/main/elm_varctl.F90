@@ -371,6 +371,13 @@ module elm_varctl
   character(len=32), public :: vsfm_satfunc_type           = 'smooth_brooks_corey_bz3'
   character(len=32), public :: vsfm_lateral_model_type     = 'none'
 
+
+  !----------------------------------------------------------
+  !h2sc switch
+  !----------------------------------------------------------
+  logical          , public :: use_h2sc                    = .false.
+  real(r8),  public :: hydraulic_anisotropy = 1.0
+  real(r8),  public :: fover = 0.5
   !----------------------------------------------------------
   ! PETSc-based thermal model switches
   !----------------------------------------------------------
