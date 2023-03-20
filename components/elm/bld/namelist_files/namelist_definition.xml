@@ -1752,6 +1752,18 @@ If TRUE (which is the default), check consistency between pct_nat_pft on the fla
 and pct_nat_pft read from the surface dataset.
 </entry>
 
+<!-- ========================================================================================  -->         
+<!-- Namelist options related to H2SC model  -->     
+<!-- ========================================================================================  -->                           
+<entry id="use_h2sc" type="logical" category="default_settings"   
+        group="elm_inparm" valid_values="">     
+Runtime flag to turn on/off h2sc.           
+</entry>
+<entry id="hydraulic_anisotropy" type="real" category="default_settings"
+        group="elm_inparm" valid_values="">
+Soil hydraulic anisotropy parameter.
+</entry>
+
 <!-- ========================================================================================  -->
 <!-- Namelist options related to lateral grid connectivity                                     -->
 <!-- ========================================================================================  -->

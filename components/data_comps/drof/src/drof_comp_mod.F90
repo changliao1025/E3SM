@@ -47,14 +47,16 @@
     character(len=*), parameter :: rpfile = 'rpointer.rof'
     type(mct_rearr) :: rearr
 
+    integer(IN)   :: kgage_height
+
     !--------------------------------------------------------------------------
     integer(IN),parameter :: ktrans = 3
 
     character(12),parameter  :: avofld(1:ktrans) = &
-         (/ "Forr_rofl   ","Forr_rofi   ","Sgageheight  "/)
+         (/ "Forr_rofl   ","Forr_rofi   ","Sr_gage_height  "/)
 
     character(12),parameter  :: avifld(1:ktrans) = &
-         (/ "rofl        ","rofi        ","gageheight  "/)
+         (/ "rofl        ","rofi        ","gage_height  "/)
     !--------------------------------------------------------------------------
 
     !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -88,7 +90,7 @@
       logical                , intent(in)    :: read_restart        ! start from restart
 
       !--- local variables ---
-      integer(IN)   :: lsize       ! local size
+      integer(IN)   :: n, lsize       ! local size
       logical       :: exists      ! file existance logical
       integer(IN)   :: nu          ! unit number
       character(CL) :: calendar ! model calendar
@@ -178,7 +180,7 @@
       call mct_aVect_init(x2r, rList=seq_flds_x2r_fields, lsize=lsize)
       call mct_aVect_zero(x2r)
 
-      fgageheight = mct_aVect_indexRA(r2x,'Fgageheight')
+      kgage_height = mct_aVect_indexRA(r2x,'Sr_gage_height', perrwith='quiet')
 
       call mct_aVect_init(r2x, rList=seq_flds_r2x_fields, lsize=lsize)
       call mct_aVect_zero(r2x)
@@ -194,11 +196,7 @@
       case('COPYALL')
          ! do nothing extra
       case('MOSART')
-         lsize = mct_avect_lsize(o2x)
-         do n = 1,lsize
-            r2x%rAttr(Fgageheight   ,n) = r2x%rAttr(kt,n) + TkFrz
-           
-         enddo
+         !h2sc
 
       end select
       call t_stopf('drof_datamode')
@@ -323,16 +321,10 @@
       !--------------------
 
       call t_barrierf('drof_r_BARRIER',mpicom)
-      !call t_startf('drof_r') chang
+      call t_startf('drof_r') !chang
 
       !--- defaults, copy all fields from streams to r2x ---
-      !chang
-      lsize = mct_avect_lsize(o2x)
-      do n = 1,lsize
       
-         r2x%rAttr(Fgageheight   ,n) = Fgageheight
-       
-      enddo
 
       call t_startf('drof_r_strdata_advance')
 
@@ -370,6 +362,12 @@
 
       case('COPYALL')
          ! do nothing extra
+      case('MOSART')
+         lsize = mct_avect_lsize(r2x)
+         do n = 1,lsize
+            r2x%rAttr(kgage_height   ,n) = 0.0_R8           
+         enddo
+
 
       end select
       call t_stopf('drof_datamode')

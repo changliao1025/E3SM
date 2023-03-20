@@ -96,7 +96,11 @@ attributes from the config_cache.xml file (with keys converted to upper-case).
 <vsfm_satfunc_type>smooth_brooks_corey_bz3</vsfm_satfunc_type>
 <vsfm_use_dynamic_linesearch>.false.</vsfm_use_dynamic_linesearch>
 <vsfm_lateral_model_type>none</vsfm_lateral_model_type>
-
+<!-- ========================================================================================  -->
+<!-- h2sc default                                                                              -->
+<!-- ========================================================================================  -->
+<use_h2sc>.false.</use_h2sc>
+<hydraulic_anisotropy>1.0</hydraulic_anisotropy>
 <!-- ========================================================================================  -->
 <!-- PETSc-based thermal model default                                                         -->
 <!-- ========================================================================================  -->

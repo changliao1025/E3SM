@@ -38,7 +38,7 @@
         rof.diatren_ann_rx1
         rof.diatren_iaf_rx1
 
-        rof.mosart.gageheight  #added by Chang Liao (chang.liao@pnnl.gov)
+        rof.mosart.gage_height  #added by Chang Liao (chang.liao@pnnl.gov)
   -->
 
   <!-- ========================================================================================  -->
@@ -71,7 +71,7 @@
       <value drof_mode="RYF8485_JRA"          >rof.ryf8485_jra</value>
       <value drof_mode="RYF9091_JRA"          >rof.ryf9091_jra</value>
       <value drof_mode="RYF0304_JRA"          >rof.ryf0304_jra</value>
-      <value drof_mode="MOSART$">mosart.gageheight</value>
+      <value drof_mode="MOSART$">mosart.gage_height</value>
     </values>
   </entry>
 
@@ -197,7 +197,7 @@
       <value stream="rof.iaf_jra.*"            >$DIN_LOC_ROOT/lnd/dlnd7/JRA55</value>
       <value stream="rof.ryf*"                 >$DIN_LOC_ROOT/lnd/dlnd7/JRA55</value>
       <value stream="rof.cplhist"              >$DROF_CPLHIST_DIR</value>
-      <value stream="mosart.gageheight"        >$DIN_LOC_ROOT/rof/drof/mosart</value>
+      <value stream="mosart.gage_height"        >$DIN_LOC_ROOT/rof/drof/mosart</value>
     </values>
   </entry>
 
@@ -663,7 +663,7 @@
            JRA.v1.1.runoff.2016.170807.nc
       </value>
       <value stream="rof.cplhist">$DROF_CPLHIST_CASE.cpl.hr2x.%ym.nc</value>
-      <value stream="mosart.gageheight">
+      <value stream="mosart.gage_height">
         MOSART.amazon.output.2000.nc
         MOSART.amazon.output.2001.nc
         MOSART.amazon.output.2002.nc
@@ -709,8 +709,8 @@
         r2x_Forr_rofl  rofl
         r2x_Forr_rofi  rofi
       </value>
-      <value stream="mosart.gageheight">
-        main_channel_water_depth_liq gageheight
+      <value stream="mosart.gage_height">
+        main_channel_water_depth_liq gage_height
       </value>
     </values>
   </entry>
