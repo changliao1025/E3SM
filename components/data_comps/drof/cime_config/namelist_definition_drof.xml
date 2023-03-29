@@ -828,7 +828,7 @@
     </values>
   </entry>
 
-  <entry id="domainfile">
+  <entry id="domainfile" skip_default_entry="true">
     <type>char</type>
     <category>streams</category>
     <input_pathname>abs</input_pathname>
@@ -839,7 +839,7 @@
       for all input data for this strdata input.
     </desc>
     <values>
-      <value>null</value>
+      <value/>
     </values>
   </entry>
 
@@ -917,7 +917,7 @@
       valid values: srcmask, dstmask, nomask,bothmask
     </desc>
     <values>
-      <value>dstmask</value>
+      <value>nomask</value>
     </values>
   </entry>
 

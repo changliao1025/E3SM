@@ -621,7 +621,7 @@ contains
        call shr_ncread_varDimNum(fn,varName,ndim)
        if (n > 2 .and. ndim /= 2) then
           write(s_logunit,F02) 'ERROR '//trim(varName)//' ndim = ',ndim
-          call shr_ncread_abort(subName//' ERROR ndim must be 2 for '//trim(varName))
+          call shr_ncread_abort(subName//' ERROR ndim must be 2 for '//trim(varName)//fn)
        elseif (ndim < 1 .or. ndim > 2) then
           write(s_logunit,F02) 'ERROR '//trim(varName)//' ndim = ',ndim
           call shr_ncread_abort(subName//' ERROR ndim must be 1 or 2 for '//trim(varName))

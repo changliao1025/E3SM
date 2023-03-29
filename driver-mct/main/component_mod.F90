@@ -499,6 +499,7 @@ contains
     if(lnd_present .and. rof_present) then
 
        if(samegrid_lr)then
+         write(logunit,*) 'h2sc land grid different with rof grid'
           dom_s  => component_get_dom_cx(rof(1))   !dom_ax
           dom_d  => component_get_dom_cx(lnd(1))   !dom_ox
           ka = mct_aVect_indexRa(dom_s%data, "area" )
@@ -507,7 +508,7 @@ contains
 
           call seq_map_map(mapper_Sr2l, av_s=dom_s%data, av_d=dom_d%data, fldlist='aream')
        else
-          !write(logunit,*) 'h2sc land grid different with rof grid'
+          write(logunit,*) 'h2sc land grid different with rof grid'
           gsmap_s => component_get_gsmap_cx(rof(1)) ! gsmap_rx
           dom_s   => component_get_dom_cx(rof(1))   ! dom_rx
 

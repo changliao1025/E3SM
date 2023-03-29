@@ -106,6 +106,7 @@ def _create_namelists(case, confdir, inst_string, infile, nmlgen, data_list_path
     else:
         if rof_domain_file != "UNSET":
             full_domain_path = os.path.join(rof_domain_path, rof_domain_file)
+            print('Chang Liao: full_domain_path = ', full_domain_path)
             nmlgen.add_default("domainfile", value=full_domain_path)
         else:
             nmlgen.add_default("domainfile", value="null")

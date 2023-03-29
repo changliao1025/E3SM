@@ -1848,6 +1848,9 @@ contains
        write(logunit,F0L)'samegrid_ro           = ',samegrid_ro
        write(logunit,F0L)'samegrid_aw           = ',samegrid_aw
        write(logunit,F0L)'samegrid_ow           = ',samegrid_ow
+       !h2sc
+       write(logunit,F0L)'samegrid_lr           = ',samegrid_lr
+
        write(logunit,F0L)'skip init ocean run   = ',skip_ocean_run
        write(logunit,F00)'cpl sequence option   = ',trim(cpl_seq_option)
        write(logunit,F0L)'do_histavg            = ',do_histavg
