@@ -58,7 +58,7 @@ module rof_comp_mct
                                 index_x2r_coszen_str, &
                                 index_r2x_Flrr_supply, index_r2x_Flrr_deficit, &
                                 index_r2x_Sr_h2orof, index_r2x_Sr_frac_h2orof, &
-                                index_x2r_Flrl_inundinf
+                                index_x2r_Flrl_inundinf, index_r2x_Sr_gage_height
 
   use mct_mod
   use ESMF

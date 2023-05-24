@@ -44,19 +44,31 @@
     !--------------------------------------------------------------------------
 
     character(CS) :: myModelName = 'rof'   ! user defined model name
+    logical       :: firstcall = .true.    ! first call logical
     character(len=*), parameter :: rpfile = 'rpointer.rof'
     type(mct_rearr) :: rearr
+    !type(mct_avect) :: avstrm   ! av of data from stream
+
 
     integer(IN)   :: kgage_height
+    !integer(IN)   :: sgage_height
 
     !--------------------------------------------------------------------------
     integer(IN),parameter :: ktrans = 3
 
-    character(12),parameter  :: avofld(1:ktrans) = &
-         (/ "Forr_rofl   ","Forr_rofi   ","Sr_gage_height  "/)
+    character(14),parameter  :: avofld(1:ktrans) = &
+         (/ "Forr_rofl     ","Forr_rofi     ","Sr_gage_height"/)
 
-    character(12),parameter  :: avifld(1:ktrans) = &
-         (/ "rofl        ","rofi        ","gage_height  "/)
+    character(14),parameter  :: avifld(1:ktrans) = &
+         (/ "rofl          ","rofi          ","gage_height   "/)
+
+   
+   !character(CL), pointer :: ilist_av(:)     ! input list for translation
+   !character(CL), pointer :: olist_av(:)     ! output list for translation
+   !character(CL), pointer :: ilist_st(:)     ! input list for translation
+   !character(CL), pointer :: olist_st(:)     ! output list for translation
+   !integer(IN)  , pointer :: count_av(:)
+   !integer(IN)  , pointer :: count_st(:)
     !--------------------------------------------------------------------------
 
     !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -180,10 +192,26 @@
       call mct_aVect_init(x2r, rList=seq_flds_x2r_fields, lsize=lsize)
       call mct_aVect_zero(x2r)
 
-      kgage_height = mct_aVect_indexRA(r2x,'Sr_gage_height', perrwith='quiet')
-
+      
       call mct_aVect_init(r2x, rList=seq_flds_r2x_fields, lsize=lsize)
       call mct_aVect_zero(r2x)
+
+      !kgage_height = mct_aVect_indexRA(r2x,'Sr_gage_height', perrwith='quiet')
+      kgage_height = mct_aVect_indexRA(r2x,'Sr_gage_height')
+      !--- figure out what's on the standard streams ---
+      !cnt = 0
+      !flds_strm = ''
+      !do n = 1,SDROF%nstreams
+      !   do k = 1,ktrans
+      !      kfld = mct_aVect_indexRA(SDROF%avs(n),trim(avifld(k)),perrWith='quiet')            
+      !   enddo
+      !enddo
+
+      !if (my_task == master_task) write(logunit,F00) ' flds_strm = ',trim(flds_strm)
+      !call shr_sys_flush(logunit)
+      !call mct_aVect_init(avstrm, rList=flds_strm, lsize=lsize)
+      !call mct_aVect_zero(avstrm)
+      !sgage_height  = mct_aVect_indexRA(avstrm,'gage_height'   ,perrWith='quiet')
       call t_stopf('drof_initmctavs')
 
       !-------------------------------------------------
@@ -333,10 +361,31 @@
 
       !--- copy streams to r2x ---
       call t_barrierf('drof_r_scatter_BARRIER', mpicom)
+
       call t_startf('drof_r_scatter')
+
       do n = 1,SDROF%nstreams
          call shr_dmodel_translateAV(SDROF%avs(n), r2x, avifld, avofld, rearr)
-      enddo
+      enddo      
+
+      !if (firstcall) then
+      !   allocate(ilist_av(SDROF%nstreams))
+      !   allocate(olist_av(SDROF%nstreams))
+      !   !allocate(ilist_st(SDROF%nstreams))
+      !   !allocate(olist_st(SDROF%nstreams))
+      !   allocate(count_av(SDROF%nstreams))
+      !   !allocate(count_st(SDROF%nstreams))
+      !end if
+      !do n = 1,SDROF%nstreams
+      !   if (firstcall) then
+      !      call shr_dmodel_translate_list(SDROF%avs(n),r2x,&
+      !           avifld(1:ktrans),avofld,ilist_av(n),olist_av(n),count_av(n))
+      !   end if
+      !   if (count_av(n) > 0) then
+      !      call shr_dmodel_translateAV_list(SDROF%avs(n),r2x,&
+      !           ilist_av(n),olist_av(n),rearr)
+      !   end if
+      !enddo
       call t_stopf('drof_r_scatter')
 
       ! zero out "special values"
@@ -347,7 +396,7 @@
             if (abs(r2x%rAttr(nf,n)) > 1.0e28) then
                r2x%rAttr(nf,n) = 0.0_r8
             end if
-            ! write(6,*)'crrentymd, currenttod, nf,n,r2x= ',currentymd, currenttod, nf,n,r2x%rattr(nf,n)
+      !      ! write(6,*)'crrentymd, currenttod, nf,n,r2x= ',currentymd, currenttod, nf,n,r2x%rattr(nf,n)
          enddo
       enddo
 
@@ -362,13 +411,13 @@
 
       case('COPYALL')
          ! do nothing extra
+         !lsize = mct_avect_lsize(r2x)
+         !do n = 1,lsize
+         !   !no change at all
+         !   write(logunit ,*) 'drof issue 0 : ',SDROF%nstreams, kgage_height, lsize, r2x%rAttr(kgage_height ,n)           
+         !enddo
       case('MOSART')
-         lsize = mct_avect_lsize(r2x)
-         do n = 1,lsize
-            r2x%rAttr(kgage_height   ,n) = 0.0_R8           
-         enddo
-
-
+         !lsize = mct_avect_lsize(r2x)         
       end select
       call t_stopf('drof_datamode')
 

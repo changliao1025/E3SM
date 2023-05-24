@@ -345,8 +345,9 @@ contains
     !-----------------------------------------------------------------------
 
     real(r8) :: dElevation_elm
+    integer :: iFlag_user_provided
 
-    real(r8)  :: dArea, drlenTotal,hlen_max , dResolution_grid, dDummy  !h2sc
+    real(r8)  :: dArea,dArea_half, dChannel_length,hlen_max , dResolution_grid, dDummy  !h2sc
     real(r8) :: dThickness_critical_zone
 
     ! -----------------------------------------------------------------
@@ -701,26 +702,11 @@ contains
        !calculation of other parameters
        !the model need the hillslope slope, which can be calculated from the above parameters
        do g = bounds%begg, bounds%endg
-          !mosart method
-          !TUnit%hlen(iunit) = TUnit%area(iunit) / TUnit%rlenTotal(iunit) / 2._r8
-          !  hlen_max = max(1000.0_r8, sqrt(TUnit%area(iunit))) ! constrain the hillslope length
-          !  if(TUnit%hlen(iunit) > hlen_max) then
-          !     TUnit%hlen(iunit) = hlen_max   ! allievate the outlier in drainage density estimation. TO DO
-          !  end if
-          !dArea = grc_pp%area(g)
-          dArea = grc_pp%area(g) * 1000.0 * 1000.0 !unit is km, convert to m
 
+          dArea = grc_pp%area(g)  * 1000.0 * 1000.0 !unit is km, convert to m
+          dArea_half = dArea / 2.0
           dElevation_elm = ldomain%topo(g)
-          drlenTotal = dArea * this%gxr(g) !unit m
-          if(this%rlen(g) > drlenTotal) then
-             drlenTotal = this%rlen(g)
-          end if
-          this%hlen(g) = dArea / drlenTotal
-          hlen_max = max(1250.0_r8, sqrt(dArea) )
-          if (this%hlen(g) > hlen_max) then
-             this%hlen(g) = hlen_max
-          end if
-
+          this%hlen(g) = sqrt(dArea) / 2.0
           cHillslope(g)%aElevation_profile = (/ this%elev0(g), &
                this%elev1(g), &
                this%elev2(g), &
@@ -734,49 +720,65 @@ contains
                this%elev10(g) /)
           if ( this%elev0(g)  .ne.  this%elev10(g) ) then
 
+             !calculate the thickness of the critical zone
              dThickness_critical_zone = 0.0
              do i=1, nlevgrnd
                 dThickness_critical_zone = dThickness_critical_zone + dzsoi(i)
              end do
-             cHillslope(g)%dThickness_critical_zone = dThickness_critical_zone  !* 1.5
+             cHillslope(g)%dThickness_critical_zone = dThickness_critical_zone
              cHillslope(g)%iFlag_hillslope = 1
-
              cHillslope(g)%dLength_hillslope = this%hlen(g)
-             if (cHillslope(g)%dLength_hillslope < 1250) then
-                cHillslope(g)%dLength_hillslope = 1250.0
+             cHillslope(g)%dElevation_min = MINVAL(cHillslope(g)%aElevation_profile)
+
+             !the minimum length of hillslope is 2000 m, so this is the limit for the grid resolution
+             if (cHillslope(g)%dLength_hillslope < 2000) then
+                cHillslope(g)%dLength_hillslope = 2000.0
              end if
 
-             this%hslp(g) = ( this%elev10(g)  - this%elev0(g)  )/ cHillslope(g)%dLength_hillslope
+             iFlag_user_provided = 1 !h2sc case 3
+             if ( iFlag_user_provided == 0) then
+                !recalculate the hillslope slope
+                this%hslp(g) = ( this%elev10(g)  - this%elev0(g)  )/ cHillslope(g)%dLength_hillslope
+                if (this%hslp(g) > 0.5 ) then
+                   this%hslp(g) = 0.5
+                endif
 
-             if (this%hslp(g) > 0.8 ) then
-                this%hslp(g) = 0.8
-             endif
+                !do we need to consider elm elevation
+                cHillslope(g)%dSlope_surface = this%hslp(g)
 
-             if (  (this%elev0(g)+this%hslp(g)*cHillslope(g)%dLength_hillslope)  < dElevation_elm  ) then
-                dDummy = this%hslp(g)
-                this%hslp(g) =  (dElevation_elm-this%elev0(g)) / cHillslope(g)%dLength_hillslope
-                !write(iulog,*) 'H2SC hillslope issue', this%elev0(g),dElevation_elm,dDummy, this%hslp(g)
-             endif
+             else
+                !case 3
+                this%hslp(g) = 40.0/850.0 !from in situ measurement
+                cHillslope(g)%dSlope_surface = this%hslp(g)
+                !do we need to adjust elevation and length?
+                !it is recommended to change the max 
+                cHillslope(g)%dElevation_max = cHillslope(g)%dElevation_min + cHillslope(g)%dLength_hillslope * cHillslope(g)%dSlope_surface
+                if (cHillslope(g)%dElevation_max > 8848 ) then
+                  cHillslope(g)%dElevation_max = 8848
+                  cHillslope(g)%dSlope_surface = (cHillslope(g)%dElevation_max - cHillslope(g)%dElevation_min) / cHillslope(g)%dLength_hillslope
+                  cHillslope(g)%aElevation_profile(11) = cHillslope(g)%dElevation_max
+                end if
 
-             cHillslope(g)%dSlope_surface = this%hslp(g) * 1.0
+             end if
 
-             !cHillslope(g)%dSlope_surface = this%hslp(g) * 10.0  !h2sc test 10 times surface slope
              if (cHillslope(g)%dSlope_surface > 0.8 ) then
                 cHillslope(g)%dSlope_surface = 0.8
              endif
 
-             cHillslope(g)%dElevation_max = cHillslope(g)%dElevation_min +  cHillslope(g)%dSlope_surface * cHillslope(g)%dLength_hillslope
-
              if ( this%rdep(g) > 0.0 ) then
                 cHillslope(g)%dChannel_depth = this%rdep(g)
              else
-                cHillslope(g)%dChannel_depth = 5.0
+                cHillslope(g)%dChannel_depth = 3.0
              end if
+
+             if (cHillslope(g)%dChannel_depth < 3 ) then
+                cHillslope(g)%dChannel_depth = 3
+             endif
 
              dResolution_grid = sqrt(dArea)
 
-             cHillslope(g)%dArea_hillslope = dArea / 2.0
-             cHillslope(g)%dWidth_hillslope = (cHillslope(g)%dArea_hillslope) / this%hlen(g)
+             cHillslope(g)%dArea_hillslope = dArea_half
+             cHillslope(g)%dWidth_hillslope = (cHillslope(g)%dArea_hillslope) / cHillslope(g)%dLength_hillslope
 
              if( cHillslope(g)%dWidth_hillslope > dResolution_grid ) then
                 cHillslope(g)%dWidth_hillslope = dResolution_grid

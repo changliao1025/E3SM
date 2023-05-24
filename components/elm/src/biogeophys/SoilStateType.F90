@@ -926,7 +926,7 @@ contains
               CASE ("loamy sand")
                  this%anisotropy_col(c,lev ) = 3
               CASE ("sandy loam")
-                 this%anisotropy_col(c,lev  ) = 14 !updated
+                 this%anisotropy_col(c,lev  ) = 4 
               CASE ("silt loam")
                  this%anisotropy_col(c,lev  ) = 10
               CASE ("loam")

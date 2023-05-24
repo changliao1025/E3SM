@@ -6,6 +6,8 @@ module surfrdMod
   !
   ! !USES:
 #include "shr_assert.h"
+!h2sc
+use shr_const_mod        , only : SHR_CONST_PI
   use shr_kind_mod    , only : r8 => shr_kind_r8
   use shr_log_mod     , only : errMsg => shr_log_errMsg
   use abortutils      , only : endrun
@@ -220,8 +222,9 @@ contains
     if (istype_domain) then
        call ncd_io(ncid=ncid, varname= 'area', flag='read', data=ldomain%area, &
             dim1name=grlnd, readvar=readvar)
-       ! convert from radians**2 to km**2
+       !convert from radians**2 to km**2      
        ldomain%area = ldomain%area * (re**2)
+       
        if (.not. readvar) call endrun( msg=' ERROR: area NOT on file'//errMsg(__FILE__, __LINE__))
        
        call ncd_io(ncid=ncid, varname= 'xc', flag='read', data=ldomain%lonc, &

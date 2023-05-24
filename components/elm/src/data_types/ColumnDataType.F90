@@ -516,8 +516,8 @@ module ColumnDataType
      real(r8), pointer :: mflx_recharge        (:)   => null() ! recharge from soil column to unconfined aquifer (kg H2O /s)
 
      !h2sc
-     real(r8), pointer :: qdrainage_h2sc  (:)=> null()
-     real(r8), pointer :: qdrainage_top  (:)=> null()
+     real(r8), pointer :: qdrainage_downslope  (:)=> null()
+     real(r8), pointer :: qdrainage_seepage  (:)=> null()
 
    contains
      procedure, public :: Init    => col_wf_init
@@ -5428,8 +5428,8 @@ contains
     allocate(this%mflx_drain             (begc:endc,1:nlevgrnd))  ; this%mflx_drain           (:,:) = nan
     allocate(this%mflx_recharge          (begc:endc))             ; this%mflx_recharge        (:)   = nan
     !h2sc variables
-    allocate(this%qdrainage_h2sc      (begc:endc))                ; this%qdrainage_h2sc        (:)   = nan
-    allocate(this%qdrainage_top      (begc:endc))                ; this%qdrainage_top        (:)   = nan
+    allocate(this%qdrainage_downslope      (begc:endc))                ; this%qdrainage_downslope        (:)   = nan
+    allocate(this%qdrainage_seepage      (begc:endc))                ; this%qdrainage_seepage        (:)   = nan
 
     !-----------------------------------------------------------------------
     ! initialize history fields for select members of col_wf
@@ -5537,14 +5537,14 @@ contains
     end if
 
     !h2sc
-    this%qdrainage_h2sc(begc:endc) = spval
-    call hist_addfld1d (fname='QDRAI_h2sc',  units='mm/s',  &
-         avgflag='A', long_name='sub-surface h2sc drainage', &
-         ptr_col=this%qdrainage_h2sc, c2l_scale_type='urbanf')
-    this%qdrainage_top(begc:endc) = spval
-    call hist_addfld1d (fname='QDRAI_top',  units='mm/s',  &
-         avgflag='A', long_name='sub-surface topology drainage', &
-         ptr_col=this%qdrainage_top, c2l_scale_type='urbanf')
+    this%qdrainage_downslope(begc:endc) = spval
+    call hist_addfld1d (fname='QDRAI_downslope',  units='mm/s',  &
+         avgflag='A', long_name='sub-surface downslope drainage', &
+         ptr_col=this%qdrainage_downslope, c2l_scale_type='urbanf')
+    this%qdrainage_seepage(begc:endc) = spval
+    call hist_addfld1d (fname='QDRAI_seepage',  units='mm/s',  &
+         avgflag='A', long_name='sub-surface seepage drainage', &
+         ptr_col=this%qdrainage_seepage, c2l_scale_type='urbanf')
 
     ! As defined here, snow_sources - snow_sinks will equal the change in h2osno at any
     ! given time step but only if there is at least one snow layer (for all landunits

@@ -2430,7 +2430,7 @@ contains
 
     call seq_flds_add(r2x_states,'Sr_gage_height')
     call seq_flds_add(x2l_states,'Sr_gage_height')
-    longname = 'Gage height from stream flow'
+    longname = 'gage height from stream flow'
     stdname  = 'gage_height_from_stream_flow'
     units    = 'meter'
     attname  = 'Sr_gage_height'

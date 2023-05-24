@@ -81,6 +81,8 @@ module rof_cpl_indices
   integer, public :: index_r2x_Sr_frac_h2orof = 0  ! rof->lnd floodplain inundation fraction
   integer, public :: nflds_r2x = 0
 
+  integer, public :: index_r2x_Sr_gage_height !rof->lnd gage height for land
+
 !=======================================================================
 contains
 
@@ -179,6 +181,8 @@ contains
       index_r2x_Sr_h2orof       = mct_avect_indexra(avtmp,'Sr_h2orof')
       index_r2x_Sr_frac_h2orof  = mct_avect_indexra(avtmp,'Sr_frac_h2orof')
     endif
+
+    index_r2x_Sr_gage_height = mct_avect_indexra(avtmp,'Sr_gage_height')
     
     nflds_r2x = mct_avect_nRattr(avtmp)
 

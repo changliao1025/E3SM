@@ -150,7 +150,7 @@ module seq_frac_mct
   use seq_map_mod,       only: seq_map_map
   use seq_map_type_mod,  only: seq_map
 
-  use prep_lnd_mod, only: prep_lnd_get_mapper_Fa2l
+  use prep_lnd_mod, only: prep_lnd_get_mapper_Fa2l, prep_lnd_get_mapper_Sr2l
   use prep_ocn_mod, only: prep_ocn_get_mapper_Fa2o
   use prep_ocn_mod, only: prep_ocn_get_mapper_SFi2o
   use prep_ice_mod, only: prep_ice_get_mapper_SFo2i
@@ -209,6 +209,7 @@ module seq_frac_mct
   type(seq_map)  , pointer :: mapper_i2o
   type(seq_map)  , pointer :: mapper_a2l
   type(seq_map)  , pointer :: mapper_l2r
+  type(seq_map)  , pointer :: mapper_r2l
   type(seq_map)  , pointer :: mapper_l2g
 
   private seq_frac_check
@@ -491,8 +492,16 @@ contains
        end if
     end if
     if (lnd_present .and. rof_present) then
-       mapper_l2r => prep_rof_get_mapper_Fl2r()
-       call seq_map_map(mapper_l2r, fractions_l, fractions_r, fldlist='lfrac:lfrin', norm=.false.)
+
+      !h2sc 
+      !existing setting does not work when rof is drof
+       !mapper_l2r => prep_rof_get_mapper_Fl2r()
+       !call seq_map_map(mapper_l2r, fractions_l, fractions_r, fldlist='lfrac:lfrin', norm=.false.)
+
+       !temporary setting for drof
+       mapper_r2l => prep_lnd_get_mapper_Sr2l()
+       call seq_map_map(mapper_r2l, fractions_r, fractions_l, fldlist='lfrac:lfrin', norm=.false.)
+
     endif
     if (lnd_present .and. glc_present) then
        mapper_l2g => prep_glc_get_mapper_Fl2g()

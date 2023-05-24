@@ -28,6 +28,7 @@ module h2sc_drainage
      
      real(kind = r8)::dElevation_max
      real(kind = r8)::dElevation_min
+     real(kind = r8)::dElevation_mean_profile
      real(kind = r8)::dHeight_below_river
      real(kind = r8)::dLength_hillslope
      real(kind = r8)::dSlope_bedrock  !radian convert to unitless
@@ -147,15 +148,19 @@ contains
 
     !===============================================
     aSeepage_mask(:) = 0
-    !this%dElevation_max = MAXVAL(this%aElevation_profile)
+    this%dElevation_max = MAXVAL(this%aElevation_profile)
     this%dElevation_min = MINVAL(this%aElevation_profile)
     if(this%dElevation_min < -413.0) then
        this%dElevation_min = -413.0
     end if
+
+    this%dElevation_mean_profile = SUM(this%aElevation_profile) / 11.0
+    if(this%dElevation_mean_profile < -413.0) then
+       this%dElevation_mean_profile = -413.0
+    end if
     !change how max elevation is calculated
     !we no longer use the elevation profile because it is not the same
 
-    this%dElevation_max = this%dElevation_min + this%dLength_hillslope * this%dSlope_surface
     if(this%dElevation_max > 8848.0) then
        this%dElevation_max = 8848.0
        !update slope as well
@@ -164,7 +169,7 @@ contains
 
     !adjust elevation profile as well
     !because the elevation cannot be large than the max elevation
-    if (this%dElevation_max <  this%aElevation_profile(this%nElevation_interval-1) ) then
+    if (this%dElevation_max <  this%aElevation_profile(this%nElevation_interval) ) then
       where (this%aElevation_profile <= this%dElevation_max )
           !seepage
           aSeepage_mask = 1
@@ -185,12 +190,8 @@ contains
 
        do i = iMask+1, this%nElevation_interval
 
-         this%aElevation_profile(i) = this%aElevation_profile(iMask) &
-         +   (i-iMask) / FLOAT(this%nElevation_interval- iMask) * dDistance
+         this%aElevation_profile(i) = this%aElevation_profile(iMask)   +   (i-iMask) / FLOAT(this%nElevation_interval- iMask) * dDistance
        end do
-
-       !write(iulog ,*) 'elm after: ',aSeepage_mask, iMask, this%dElevation_max, this%aElevation_profile
-
 
     endif
 
@@ -324,10 +325,7 @@ contains
     dFlow_downslope_out = dDummy4 / dDummy5
     !, which is exactly the same with the following:
 
-    dDummy6 =  (dLength_seepage + dLength_water_table)/dLength_hillslope_in
-    if(dDummy6 > 1)then
-       dDummy6 = 1
-    end if
+   
 
     !dFlow_downslope_out = dSaturate_hydraulic_conductivity_in * dHeight_below_river_in &
     !    * dDummy_slope / dLength_hillslope_in
@@ -514,7 +512,7 @@ contains
 
     !===============================================
 
-    !dSlope_water_table_out = dSlope_surface_in
+    !dSlope_water_table_out = dSlope_surface_in !for h2sc case 4
     this%dSlope_water_table = dSlope_water_table_out
     !===============================================
 
@@ -610,12 +608,9 @@ contains
     real(kind = r8) :: C2, D2, C3, D3
     integer, dimension(nElevation_interval_in):: aSeepage_mask
     integer, dimension(:), allocatable :: aIndex
-    real(kind = r8) ::  dRatio1, dRatio2, dRatio3, dElevation_difference
-
-   
+    real(kind = r8) ::  dRatio1, dRatio2, dRatio3, dElevation_difference   
    
     dRatio1 = 1-dSlope_surface_in **(1.0)
-
 
     dRatio2 = 1.0
     dRatio3 = 1.0
@@ -691,7 +686,7 @@ contains
        end if
 
 
-       !dSlope_water_table_out = dSlope_surface_in
+       !dSlope_water_table_out = dSlope_surface_in  !for h2sc case 4
        this%dSlope_water_table = dSlope_water_table_out
        !===============================================
     end if
@@ -830,14 +825,6 @@ contains
     dFlow_seepage_out = dSaturate_hydraulic_conductivity_in &
          * dLength_seepage * (dSlope_surface_in **1) * dWidth_hillslope_in / dArea_hillslope_in
     this%dFlow_seepage = dFlow_seepage_out
-
-
-    if (dFlow_seepage_out > 1) then
-      
-      write(iulog ,*) 'seepage flow: ', dFlow_seepage_out, dSaturate_hydraulic_conductivity_in, dLength_seepage, dSlope_surface_in, dWidth_hillslope_in, dArea_hillslope_in, this%aSeepage_mask
-    call shr_sys_flush(iulog)
-   end if
-    
 
     return
   end function calculate_seepage_flow

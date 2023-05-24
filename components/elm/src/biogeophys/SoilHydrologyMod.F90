@@ -2082,7 +2082,7 @@ integer:: global_column
 real(r8) :: dDistance
 real(r8) :: dElevation
 real(r8) :: dElevation_clm
-real(r8) :: dElevation_mean
+real(r8) :: dElevation_mean_profile
 real(r8) :: dElevation_max
 real(r8) :: dElevation_min
 real(r8) :: dElevation_water_table
@@ -2136,11 +2136,11 @@ associate(                                                            &
      h2osoi_liq         =>    col_ws%h2osoi_liq        , & ! Output: [real(r8) (:,:) ] liquid water (kg/m2)
      
      qflx_drain         =>    col_wf%qflx_drain         , & ! Output: [real(r8) (:)   ] sub-surface runoff (mm H2O /s)
-     qdrainage_h2sc     =>    col_wf%qdrainage_h2sc     , &
-     qdrainage_top      =>    col_wf%qdrainage_top      , &
+     qdrainage_downslope     =>    col_wf%qdrainage_downslope     , &
+     qdrainage_seepage      =>    col_wf%qdrainage_seepage      , &
      
      pSlope_surface     =>    col_ws%pSlope_surface     , &
-     pElevation_mean     =>    col_ws%pElevation_mean     , &
+     pElevation_mean    =>    col_ws%pElevation_mean     , &
      pSlope_bedrock     =>    col_ws%pSlope_bedrock      , &
      pSlope_wt          =>    col_ws%pSlope_wt     , &
      pGage_height       =>    col_ws%pGage_height     , &
@@ -2291,14 +2291,14 @@ associate(                                                            &
         dElevation_clm = ldomain%topo(g)                       ! gridcell sfc elevation
 
         !check clm elevation, we will adjust it if necessary
-        dElevation_mean = 0.5 * (dElevation_min + dElevation_max)
+        dElevation_mean_profile = cHillslope(g)%dElevation_mean_profile !0.5 * (dElevation_min + dElevation_max)
         if( dElevation_clm < dElevation_min) then
            !something is not right in elevation
-           dElevation_clm = dElevation_mean
+           dElevation_clm = dElevation_mean_profile
         else
            if( dElevation_clm > dElevation_max) then
               !something is not right in elevation
-              dElevation_clm = dElevation_mean
+              dElevation_clm = dElevation_mean_profile
            else
               !normal
            end if
@@ -2333,7 +2333,7 @@ associate(                                                            &
            do j = max(jwt(c),1), nlevbed
               dzsum  = dzsum + dzmm(c,j)
               icefracsum = icefracsum + icefrac(c,j) * dzmm(c,j)
-              !anisotropy(c,j) = 1.0
+              !anisotropy(c,j) = 1.0  !for h2sc case 5 
               dDummy = dDummy +   hksat(c,j) * anisotropy(c,j) * dzmm(c,j)
               dDummy1 = dDummy1 +    dKsat2 * anisotropy(c,j) * dzmm(c,j)
            end do
@@ -2413,9 +2413,7 @@ associate(                                                            &
               dHeight_below_river =  cHillslope(g)%dThickness_critical_zone - (dDummy)
               
               if( dElevation_water_table  > dElevation_min ) then                    
-                 
-                 !write(iulog ,*) 'thickness issue 4: ', dElevation_water_table, dElevation_max, dElevation_min, dChannel_depth, dHeight_below_river, cHillslope(g)%dHeight_below_river,    dzsum, dThickness_critical_zone, dElevation_clm , zwt(c)
-                 !call shr_sys_flush(iulog)
+             
                  dElevation_water_table = dElevation_min
               else
                  !3
@@ -2423,11 +2421,7 @@ associate(                                                            &
               end if
            end if
 
-
-           !if(dElevation_water_table == dElevation_min) then
-          !     write(iulog ,*) 'thickness issue 5: ', dChannel_depth, dHeight_below_river, cHillslope(g)%dHeight_below_river, dzsum
-           !    call shr_sys_flush(iulog)
-           !end if
+        
         end if
 
         ALLOCATE( aSoil_column(nElevation_interval) , stat = iFlag_allocation)
@@ -2553,6 +2547,8 @@ associate(                                                            &
            !     dSlope_surface)
 
            rsub_top(c) = dFlow_downslope + dFlow_seepage !+ dFlow_suspend
+           qdrainage_downslope(c) = dFlow_downslope
+           qdrainage_seepage(c) = dFlow_seepage
 
            !if(rsub_top(c) <1.0E-10) then 
           !    write(iulog ,*) 'type 1 h2sc RSUB_TOP: ', iSeepage_type, rsub_top(c) , dFlow_downslope, dFlow_seepage, dSaturate_hydraulic_conductivity, dHeight_below_river, dLength_seepage,   dLength_water_table,   dSlope_water_table, dSlope_surface, dWidth_hillslope, dLength_hillslope, dElevation_max,    dElevation_min, dElevation_water_table
@@ -2581,8 +2577,7 @@ associate(                                                            &
 
            if(dSlope_water_table < 1E-8) then
               dSlope_water_table = 0.0
-              dFlow_downslope = 0.0
-              !write(iulog ,*) 'water table slope too small: case 2'
+              dFlow_downslope = 0.0             
            else
               dDummy = cSeepage(c)%calculate_downslope_flow( &
                    dArea_hillslope, &
@@ -2601,12 +2596,6 @@ associate(                                                            &
               !end if
            end if
 
-
-           !if( dFlow_downslope >0.01) then
-           !   write(iulog ,*) 'case2 downslope: ',  iSeepage_type, dSaturate_hydraulic_conductivity, dHeight_below_river, cHillslope(g)!%dHeight_below_river, cHillslope(g)%dThickness_critical_zone, dLength_seepage,   dLength_water_table, dSlope_water_table, !dSlope_surface, dWidth_hillslope
-           !   call shr_sys_flush(iulog)
-           !end if
-
            dDummy = cSeepage(c)%calculate_seepage_flow(dArea_hillslope, &
                 dLength_hillslope, &
                 dSaturate_hydraulic_conductivity, &
@@ -2617,11 +2606,7 @@ associate(                                                            &
            !if (dFlow_seepage < 1.0e-8) then
            !   dFlow_seepage=  0.0
            !end if
-           !if( dFlow_seepage >0.01) then
-           !   write(iulog ,*) 'seepage flow too high 2: ', dFlow_seepage, iSeepage_type, dSaturate_hydraulic_conductivity, dSlope_surface, !dLength_hillslope, dElevation_max, dElevation_min, dElevation_water_table, dLength_seepage
-           !   call shr_sys_flush(iulog)
-           !
-           !end if
+           
 
            !dDummy = cSeepage(c)%calculate_phi_2( dLength_seepage,&
            !dLength_water_table)
@@ -2630,19 +2615,19 @@ associate(                                                            &
            !dSlope_bedrock, &
            !dSlope_surface)
            rsub_top(c) = dFlow_downslope + dFlow_seepage !+ dFlow_suspend
-
-           if(rsub_top(c) <= 1.0E-8) then 
-              write(iulog ,*) 'type 2 h2sc RSUB_TOP: ', iSeepage_type, rsub_top(c) , dFlow_downslope, dFlow_seepage, dSaturate_hydraulic_conductivity, dHeight_below_river, dLength_seepage,   dLength_water_table,   dSlope_water_table, dSlope_surface, dWidth_hillslope, dLength_hillslope, dElevation_max,    dElevation_min, dElevation_water_table
-              call shr_sys_flush(iulog)
-           end if
+           qdrainage_downslope(c) = dFlow_downslope
+           qdrainage_seepage(c) = dFlow_seepage
+           
         case (3)
            !completely flooded
            !in this case, we need another solution
            dFlow_downslope = 0.0
            dFlow_seepage = 0.0
+           qdrainage_downslope(c) = dFlow_downslope
+           qdrainage_seepage(c) = dFlow_seepage
            dSlope_water_table = 0.0
            rsub_top(c)  = 0.0
-           write(iulog,*) 'h2sc case 3: flooded'
+           write(iulog,*) 'h2sc flooded'
            call shr_sys_flush(iulog)
         end select
 
@@ -3118,7 +3103,7 @@ associate(                                                            &
 
   do fc = 1, num_hydrologyc
      c = filter_hydrologyc(fc)
-     qdrainage_top(c) = rsub_top(c)
+     
   end do
 
 
@@ -3127,7 +3112,6 @@ associate(                                                            &
   do fc = 1, num_hydrologyc
      c = filter_hydrologyc(fc)
      !Sub-surface runoff and drainage
-     qdrainage_h2sc(c) = rsub_top(c)
      qflx_drain(c) = qflx_rsub_sat(c) + rsub_top(c)
      ! Set imbalance for snow capping
      qflx_qrgwl(c) = qflx_snwcp_liq(c)

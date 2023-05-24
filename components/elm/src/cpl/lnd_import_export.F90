@@ -1365,21 +1365,30 @@ contains
        !50==================================================
 
        rof2lnd_vars%gage_height(g) = x2l( index_x2l_Sr_gage_height , i )
+       
+       !write(iulog ,*) 'h2sc issue 1 : ',  x2l( index_x2l_Sr_gage_height , i )
 
        if (cHillslope(g)%iFlag_hillslope  ==  1) then
           cHillslope(g)%dHeight_below_river = rof2lnd_vars%gage_height(g)
 
           if (cHillslope(g)%dChannel_depth >0.0  ) then
+             
              if(cHillslope(g)%dHeight_below_river > 50.0) then
                 cHillslope(g)%dHeight_below_river = 50.0
              end if
 
-             if(cHillslope(g)%dHeight_below_river <= 1.0) then !2.5
-                cHillslope(g)%dHeight_below_river = 1.0
+             if(cHillslope(g)%dHeight_below_river <= 0.1) then !2.5
+                cHillslope(g)%dHeight_below_river = 0.1
              end if
           else
-             cHillslope(g)%dHeight_below_river = 1.0
+             cHillslope(g)%dHeight_below_river = 0.1
           end if
+
+          
+
+          !for case 6 and 7 set dHeight_below_river equals to 0.5 or 15.0
+          !cHillslope(g)%dHeight_below_river = 0.01   !h2sc case 6 
+          !cHillslope(g)%dHeight_below_river = 10.0   !h2sc case 7
 
        end if
 

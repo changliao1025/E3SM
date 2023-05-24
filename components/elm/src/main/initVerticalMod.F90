@@ -140,6 +140,8 @@ contains
        dzsoi(j)= 0.5_r8*(zsoi(j+1)-zsoi(j-1))
     enddo
     dzsoi(nlevgrnd) = zsoi(nlevgrnd)-zsoi(nlevgrnd-1)
+    !h2sc change last layer thickness
+    dzsoi(nlevgrnd) = 50.0
 
     zisoi(0) = 0._r8
     do j = 1, nlevgrnd-1
